@@ -1,0 +1,28 @@
+name: MP-05 debris iPad compatibility
+
+on:
+  push:
+    branches: ["feature/mission-debris"]
+    paths:
+      - "missions/debris/**"
+      - "tests/debris-ipad.spec.js"
+      - ".github/workflows/debris-ipad.yml"
+  workflow_dispatch:
+
+jobs:
+  ipad-webkit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npx playwright install --with-deps webkit
+      - run: npx playwright test tests/debris-ipad.spec.js
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debris-ipad-test-artifacts
+          path: test-results/
+          if-no-files-found: ignore
