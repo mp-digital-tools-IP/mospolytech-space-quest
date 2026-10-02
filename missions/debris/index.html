@@ -7,97 +7,29 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#070911">
 <title>Московский Политех — Очистка орбиты</title>
+<link rel="stylesheet" href="../../assets/mission-system.css">
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070911;color:#fff;font-family:Arial,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-body{display:flex;align-items:center;justify-content:center;min-width:0;overscroll-behavior:none}
-#viewport-shell{position:relative;overflow:hidden;flex:0 0 auto}
-#game-container{position:absolute;left:0;top:0;width:800px;height:600px;transform-origin:0 0;background:#070911;overflow:hidden}
-canvas{display:block;width:800px;height:600px;background:#070911}
-#brandbar{position:absolute;right:14px;top:12px;z-index:8;pointer-events:none}
-#brandbar img{width:168px;background:#fff;border-radius:7px;padding:6px 9px;display:block}
-#top-status{position:absolute;left:14px;top:13px;z-index:9;background:rgba(10,12,18,.82);border:1px solid #343a45;border-radius:10px;padding:8px 11px;font-size:11px;font-weight:800;letter-spacing:.08em;color:#dfe3e8}
-#top-status b{color:#e51d2a}
-#cockpit{position:absolute;left:0;right:0;bottom:0;height:180px;z-index:12;background:linear-gradient(180deg,rgba(11,13,20,.88),rgba(4,5,9,.99));border-top:1px solid #373c47;display:flex;gap:9px;padding:10px 12px}
-.panel{background:rgba(17,20,30,.86);border:1px solid #353a46;border-radius:10px}
-#telemetry{width:220px;min-width:220px;border-left:4px solid #e51d2a;padding:10px 12px;display:flex;flex-direction:column;justify-content:center}
-.kicker{font-size:9px;color:#e51d2a;letter-spacing:.13em;font-weight:800;text-transform:uppercase;margin-bottom:6px}
-.stat{font-size:12px;line-height:1.42;color:#d9dde3}.stat strong{color:#fff}
-#mission-panel{flex:1;padding:13px 14px;display:flex;flex-direction:column;justify-content:center;position:relative}
-#mission-title{font-size:11px;color:#e51d2a;font-weight:800;letter-spacing:.11em}
-#mission-hint{font-size:12px;line-height:1.34;color:#e6e9ed;margin-top:6px;max-width:280px}
-#mission-status{position:absolute;right:10px;top:9px;color:#8c939d;font-size:10px;font-weight:700}
-#mission-panel:after{content:"";display:block;width:72px;height:3px;border-radius:3px;background:#e51d2a;margin-top:10px}
-#controls{display:none;width:300px;min-width:300px;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}
-.control{height:66px;min-width:64px;border:2px solid rgba(255,255,255,.5);border-radius:17px;background:#151925;color:#fff;font-weight:900;font-size:24px;touch-action:none;-webkit-user-select:none;user-select:none}
-.control small{display:block;font-size:7px;letter-spacing:.07em;margin-top:2px;font-weight:700}
-.control:active{background:#e51d2a;border-color:#ff7d85}
-#pulse{width:93px;background:#8e1620;border-color:#ef5963;font-size:18px}
-#reset{width:73px;background:#262b35;border-color:#626a78;font-size:11px}
-.overlay{position:absolute;inset:0;z-index:30;background:rgba(5,6,12,.96);display:none;align-items:center;justify-content:center;padding:28px}
-.overlay.active{display:flex}
-.card{width:610px;max-width:94%;background:#11141d;border:1px solid #414753;border-radius:18px;padding:27px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.42)}
-.card h1{font-size:34px;line-height:1.02;margin:8px 0 12px}.card p{font-size:15px;line-height:1.46;color:#d0d5dc}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0;text-align:left}.step{background:#0a0c13;border:1px solid #303641;border-radius:10px;padding:11px}.step b{display:block;color:#e51d2a;font-size:10px;letter-spacing:.08em;margin-bottom:5px}.step span{font-size:11px;color:#d3d7dd;line-height:1.3}
-.action{min-height:56px;border:0;border-radius:11px;background:#e51d2a;color:#fff;font-size:17px;font-weight:800;padding:0 25px;margin-top:10px}.action:active{background:#c91824}
-#countdown{font-size:132px;font-weight:900;line-height:1;text-shadow:0 0 36px rgba(229,29,42,.42)}#count-sub{position:absolute;top:65%;left:0;right:0;text-align:center;color:#e51d2a;font-size:13px;font-weight:800;letter-spacing:.18em}
-#warning{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:10;background:rgba(148,20,30,.9);border:1px solid #ff737d;border-radius:999px;padding:8px 14px;font-size:10px;font-weight:800;letter-spacing:.08em;display:none}#warning.show{display:block}
-#rotate-note{display:none;position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:80;background:rgba(15,18,27,.94);border:1px solid #424854;border-radius:999px;padding:8px 14px;color:#d5d9df;font-size:12px;white-space:nowrap;pointer-events:none}
-@media(orientation:portrait) and (max-width:600px){#rotate-note{display:block}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070911;color:#fff;font-family:Arial,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{display:flex;align-items:center;justify-content:center;min-width:0;overscroll-behavior:none}
+#viewport-shell{position:relative;overflow:hidden;flex:0 0 auto}#game-container{position:absolute;left:0;top:0;width:800px;height:600px;transform-origin:0 0;background:#070911;overflow:hidden}canvas{display:block;width:800px;height:600px;background:#070911}
+#brandbar{position:absolute;right:14px;top:12px;z-index:8;pointer-events:none}#brandbar img{width:168px;background:#fff;border-radius:7px;padding:6px 9px;display:block}#top-status{position:absolute;left:14px;top:104px;z-index:9;background:rgba(10,12,18,.82);border:1px solid #343a45;border-radius:10px;padding:8px 11px;font-size:11px;font-weight:800;letter-spacing:.08em;color:#dfe3e8}#top-status b{color:#e51d2a}
+#cockpit{position:absolute;left:0;right:0;bottom:0;height:180px;z-index:12;background:linear-gradient(180deg,rgba(11,13,20,.88),rgba(4,5,9,.99));border-top:1px solid #373c47;display:flex;gap:9px;padding:10px 12px}.panel{background:rgba(17,20,30,.86);border:1px solid #353a46;border-radius:10px}
+#telemetry{width:220px;min-width:220px;border-left:4px solid #e51d2a;padding:10px 12px;display:flex;flex-direction:column;justify-content:center}.kicker{font-size:9px;color:#e51d2a;letter-spacing:.13em;font-weight:800;text-transform:uppercase;margin-bottom:6px}.stat{font-size:12px;line-height:1.42;color:#d9dde3}.stat strong{color:#fff}
+#mission-panel{flex:1;padding:13px 14px;display:flex;flex-direction:column;justify-content:center;position:relative}#mission-title{font-size:11px;color:#e51d2a;font-weight:800;letter-spacing:.11em}#mission-hint{font-size:12px;line-height:1.34;color:#e6e9ed;margin-top:6px;max-width:280px}#mission-status{position:absolute;right:10px;top:9px;color:#8c939d;font-size:10px;font-weight:700}#mission-panel:after{content:"";display:block;width:72px;height:3px;border-radius:3px;background:#e51d2a;margin-top:10px}
+#controls{display:none;width:300px;min-width:300px;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}.control{height:66px;min-width:64px;border:2px solid rgba(255,255,255,.5);border-radius:17px;background:#151925;color:#fff;font-weight:900;font-size:24px;touch-action:none;-webkit-user-select:none;user-select:none}.control small{display:block;font-size:7px;letter-spacing:.07em;margin-top:2px;font-weight:700}.control:active{background:#e51d2a;border-color:#ff7d85}#pulse{width:93px;background:#8e1620;border-color:#ef5963;font-size:18px}#reset{width:73px;background:#262b35;border-color:#626a78;font-size:11px}
+.overlay{position:absolute;inset:0;z-index:30;background:rgba(5,6,12,.96);display:none;align-items:center;justify-content:center;padding:28px}.overlay.active{display:flex}.card{width:610px;max-width:94%;background:#11141d;border:1px solid #414753;border-radius:18px;padding:27px;text-align:center}.card h1{font-size:34px;line-height:1.02;margin:8px 0 12px}.card p{font-size:15px;line-height:1.46;color:#d0d5dc}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0;text-align:left}.step{background:#0a0c13;border:1px solid #303641;border-radius:10px;padding:11px}.step b{display:block;color:#e51d2a;font-size:10px;letter-spacing:.08em;margin-bottom:5px}.step span{font-size:11px;color:#d3d7dd;line-height:1.3}.action{min-height:56px;border:0;border-radius:11px;background:#e51d2a;color:#fff;font-size:17px;font-weight:800;padding:0 25px;margin-top:10px}.action:active{background:#c91824}
+#countdown{font-size:132px;font-weight:900;line-height:1;text-shadow:0 0 36px rgba(229,29,42,.42)}#count-sub{position:absolute;top:65%;left:0;right:0;text-align:center;color:#e51d2a;font-size:13px;font-weight:800;letter-spacing:.18em}#warning{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:10;background:rgba(148,20,30,.9);border:1px solid #ff737d;border-radius:999px;padding:8px 14px;font-size:10px;font-weight:800;letter-spacing:.08em;display:none}#warning.show{display:block}
+#rotate-note{display:none;position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:80;background:rgba(15,18,27,.94);border:1px solid #424854;border-radius:999px;padding:8px 14px;color:#d5d9df;font-size:12px;white-space:nowrap;pointer-events:none}@media(orientation:portrait) and (max-width:600px){#rotate-note{display:block}}
 </style>
 </head>
 <body>
-<div id="viewport-shell">
- <div id="game-container">
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
-  <div id="brandbar"><img src="../../assets/polytech_logo_main_RGB_RUS.png" alt="Московский Политех"></div>
-  <div id="top-status">СЕКТОР <b id="clean-top">0%</b> · ВОЛНА <span id="wave-top">1/3</span></div>
-  <div id="warning">НЕ ТРОГАЙ ДЕЙСТВУЮЩИЙ СПУТНИК</div>
-
-  <div id="cockpit">
-   <div id="telemetry" class="panel">
-    <div class="kicker">Контроль сектора</div>
-    <div class="stat">Очищено: <strong><span id="clean">0</span>%</strong></div>
-    <div class="stat">Мусор: <strong><span id="debris-left">0</span></strong></div>
-    <div class="stat">Защита: <strong><span id="shield">3</span>/3</strong></div>
-    <div class="stat">Ошибки: <strong><span id="errors">0</span>/3</strong></div>
-    <div class="stat">Время: <strong><span id="time">90</span> с</strong></div>
-   </div>
-   <div id="mission-panel" class="panel">
-    <div id="mission-status">MP-05 · 1/3</div>
-    <div id="mission-title">ОЧИСТКА ОРБИТЫ</div>
-    <div id="mission-hint">Поворачивай аппарат, используй тягу и импульс перехвата. Крупные фрагменты распадаются на два меньших.</div>
-   </div>
-   <div id="controls">
-    <button class="control" data-key="left">↺<small>ПОВОРОТ</small></button>
-    <button class="control" data-key="up">↑<small>ТЯГА</small></button>
-    <button class="control" data-key="right">↻<small>ПОВОРОТ</small></button>
-    <button class="control" id="pulse" data-key="fire">●<small>ИМПУЛЬС</small></button>
-    <button class="control" id="reset" type="button">СБРОС<small>ЗАНОВО</small></button>
-   </div>
-  </div>
-
-  <div id="start-overlay" class="overlay active">
-   <div class="card">
-    <div class="kicker">Космическая миссия · MP-05</div>
-    <h1>Очисти орбитальный сектор</h1>
-    <p>Проведи аппарат Московского Политеха через три волны космического мусора. На третьей волне появятся действующие спутники — попадать по ним нельзя.</p>
-    <div class="steps">
-     <div class="step"><b>01 · ПЕРЕХВАТ</b><span>Разворачивай аппарат и снимай опасные фрагменты импульсом.</span></div>
-     <div class="step"><b>02 · ДРОБЛЕНИЕ</b><span>Крупный объект распадается на два меньших — сектор нужно дочистить.</span></div>
-     <div class="step"><b>03 · ЗАЩИТА</b><span>Не сталкивайся с мусором и не задевай работающие спутники.</span></div>
-    </div>
-    <button class="action" onclick="startCountdown()">НАЧАТЬ ОЧИСТКУ</button>
-   </div>
-  </div>
-  <div id="count-overlay" class="overlay"><div id="countdown">3</div><div id="count-sub">СИСТЕМЫ ПЕРЕХВАТА ГОТОВЫ</div></div>
-  <div id="result-overlay" class="overlay"><div class="card"><div class="kicker" id="result-kicker">Результат миссии</div><h1 id="result-title">Сектор очищен</h1><p id="result-text"></p><button class="action" onclick="resetMission()">ЕЩЁ ОДНА МИССИЯ</button></div></div>
- </div>
-</div>
-<div id="rotate-note">Для игры удобнее повернуть iPhone горизонтально</div>
-<script>
-(function(){var W=800,H=600,PAD=4;function resize(){var el=document.getElementById('game-container'),shell=document.getElementById('viewport-shell');if(!el||!shell)return;var vw=Math.max(240,window.innerWidth||document.documentElement.clientWidth||800),vh=Math.max(240,window.innerHeight||document.documentElement.clientHeight||600),scale=Math.min((vw-PAD)/W,(vh-PAD)/H);if(scale>1.18)scale=1.18;shell.style.width=Math.round(W*scale)+'px';shell.style.height=Math.round(H*scale)+'px';el.style.transform='scale('+scale+')';}window.mpDebrisResize=resize;window.addEventListener('resize',resize);window.addEventListener('orientationchange',function(){setTimeout(resize,120)});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',resize);else resize();})();
-</script>
-<script src="game-legacy.js"></script>
+<div id="viewport-shell"><div id="game-container">
+<canvas id="gameCanvas" width="800" height="600"></canvas><div id="brandbar"><img src="../../assets/polytech_logo_main_RGB_RUS.png" alt="Московский Политех"></div><div id="top-status">СЕКТОР <b id="clean-top">0%</b> · ВОЛНА <span id="wave-top">1/3</span></div><div id="warning">НЕ ТРОГАЙ ДЕЙСТВУЮЩИЙ СПУТНИК</div>
+<div id="cockpit"><div id="telemetry" class="panel"><div class="kicker">Контроль сектора</div><div class="stat">Очищено: <strong><span id="clean">0</span>%</strong></div><div class="stat">Мусор: <strong><span id="debris-left">0</span></strong></div><div class="stat">Защита: <strong><span id="shield">3</span>/3</strong></div><div class="stat">Ошибки: <strong><span id="errors">0</span>/3</strong></div><div class="stat">Время: <strong><span id="time">90</span> с</strong></div></div><div id="mission-panel" class="panel"><div id="mission-status">MP-05 · 1/3</div><div id="mission-title">ОЧИСТКА ОРБИТЫ</div><div id="mission-hint">Поворачивай аппарат, используй тягу и импульс перехвата. Крупные фрагменты распадаются на два меньших.</div></div><div id="controls"><button class="control" data-key="left">↺<small>ПОВОРОТ</small></button><button class="control" data-key="up">↑<small>ТЯГА</small></button><button class="control" data-key="right">↻<small>ПОВОРОТ</small></button><button class="control" id="pulse" data-key="fire">●<small>ИМПУЛЬС</small></button><button class="control" id="reset" type="button">СБРОС<small>ЗАНОВО</small></button></div></div>
+<div id="start-overlay" class="overlay active"><div class="card"><div class="kicker">МИССИЯ 04 / 04 · MP-05</div><h1>Очисти орбитальный сектор</h1><p>Проведи аппарат Московского Политеха через три волны космического мусора. На третьей волне появятся действующие спутники — попадать по ним нельзя.</p><div class="steps"><div class="step"><b>01 · ПЕРЕХВАТ</b><span>Разворачивай аппарат и снимай опасные фрагменты импульсом.</span></div><div class="step"><b>02 · ДРОБЛЕНИЕ</b><span>Крупный объект распадается на два меньших — сектор нужно дочистить.</span></div><div class="step"><b>03 · ЗАЩИТА</b><span>Не сталкивайся с мусором и не задевай работающие спутники.</span></div></div><button class="action" onclick="startCountdown()">НАЧАТЬ ОЧИСТКУ</button></div></div>
+<div id="count-overlay" class="overlay"><div id="countdown">3</div><div id="count-sub">СИСТЕМЫ ПЕРЕХВАТА ГОТОВЫ</div></div>
+<div id="result-overlay" class="overlay"><div class="card"><div class="kicker" id="result-kicker">Результат миссии</div><h1 id="result-title">Сектор очищен</h1><p id="result-text"></p><button class="action" onclick="resetMission()">ЕЩЁ ОДНА МИССИЯ</button></div></div>
+</div></div><div id="rotate-note">Для игры удобнее повернуть iPhone горизонтально</div>
+<script>(function(){var W=800,H=600,PAD=4;function resize(){var el=document.getElementById('game-container'),shell=document.getElementById('viewport-shell');if(!el||!shell)return;var vw=Math.max(240,window.innerWidth||document.documentElement.clientWidth||800),vh=Math.max(240,window.innerHeight||document.documentElement.clientHeight||600),scale=Math.min((vw-PAD)/W,(vh-PAD)/H);if(scale>1.18)scale=1.18;shell.style.width=Math.round(W*scale)+'px';shell.style.height=Math.round(H*scale)+'px';el.style.transform='scale('+scale+')'}window.mpDebrisResize=resize;window.addEventListener('resize',resize);window.addEventListener('orientationchange',function(){setTimeout(resize,120)});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',resize);else resize()})();</script>
+<script src="../../assets/mission-system.js"></script><script src="game-legacy.js"></script>
 </body>
 </html>
