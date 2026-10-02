@@ -10,10 +10,10 @@
 <style>
 :root{--red:#e51d2a;--red-dark:#c91824;--black:#111214;--text:#171a20;--gray:#f3f5f8;--line:#dfe3e9;--muted:#69717c;--green:#178b4b}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100%;width:100%;font-family:Arial,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#fff;color:var(--text)}
-body{overflow-x:hidden;-webkit-font-smoothing:antialiased}
+html,body{margin:0;width:100%;height:100%;min-height:0;overflow:hidden;font-family:Arial,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#fff;color:var(--text)}
+body{-webkit-font-smoothing:antialiased;overscroll-behavior:none}
 button{font:inherit;-webkit-appearance:none;appearance:none;cursor:pointer}
-.screen{display:none;min-height:100vh;padding:20px 26px;position:relative;overflow:hidden}
+.screen{display:none;position:fixed;inset:0;width:100%;height:100%;min-height:0;padding:20px 26px;overflow:hidden}
 .screen.active{display:flex;flex-direction:column}
 .brand{display:flex;align-items:center;min-height:62px;position:relative;z-index:3}
 .brand img{display:block;width:238px;max-width:52vw;height:auto}
@@ -72,10 +72,13 @@ h1{font-size:58px;line-height:.96;margin:14px 0 20px;letter-spacing:-.045em;colo
 .corner-accent{position:absolute;right:-120px;top:-120px;width:340px;height:340px;border:46px solid #f7d7da;border-radius:50%;z-index:0}
 .footer-note{font-size:12px;color:#8a919a;position:relative;z-index:2}
 @media(max-width:820px){
- .screen{padding:16px}
- .start-grid{display:block;padding:24px 0 10px}
- .hero{width:100%;padding-top:24px}
- .orbit-stage{width:74%;max-width:380px;margin:20px auto 0}
+ .screen{padding:14px 16px}
+ .brand{min-height:48px}
+ .brand img{width:205px}
+ .redline{margin-top:7px;height:5px}
+ .start-grid{display:flex;flex-direction:column;justify-content:center;gap:10px;padding:8px 0;min-height:0;overflow:hidden}
+ .hero{width:100%;padding-top:2px;flex:0 0 auto}
+ .orbit-stage{width:220px;height:220px;max-width:220px;margin:2px auto 0;flex:0 0 auto}
  h1{font-size:46px}.lead{font-size:19px}
  .game{display:block}
  .card{padding:16px;margin-bottom:12px}
@@ -90,14 +93,24 @@ h1{font-size:58px;line-height:.96;margin:14px 0 20px;letter-spacing:-.045em;colo
  .result h2{font-size:43px}
 }
 @media(max-width:520px){
- .brand img{width:195px;max-width:62vw}.brand.compact img{width:142px;max-width:37vw}
+ .brand img{width:178px;max-width:62vw}.brand.compact img{width:142px;max-width:37vw}
  .topbar{gap:7px}.progress{font-size:13px}.timer{font-size:13px;padding:8px 10px}
- h1{font-size:38px}.lead{font-size:17px}
- .orbit-stage{width:88%}.event-tag{font-size:11px}
+ h1{font-size:34px;margin:9px 0 12px}.lead{font-size:16px;line-height:1.32;margin-bottom:16px}
+ .primary{min-height:52px;padding:14px 22px;font-size:17px}
+ .orbit-stage{width:190px;height:190px;max-width:190px}
+ .orbit-core{width:105px;height:105px;border-radius:24px;font-size:17px}
+ .event-tag{display:none}
+ .footer-note{display:none}
  .mission h2{font-size:24px}
  .module{font-size:12px;min-height:66px}
  .sat{min-height:305px}
  .result h2{font-size:36px}
+}
+@media(max-height:680px) and (max-width:820px){
+ #start .orbit-stage{display:none}
+ #start .start-grid{justify-content:center}
+ #start h1{font-size:32px}
+ #start .lead{font-size:15px}
 }
 @media(max-height:720px) and (min-width:821px){
  .screen{padding-top:14px;padding-bottom:14px}

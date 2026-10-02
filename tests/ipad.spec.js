@@ -89,3 +89,28 @@ test('iPad 2017 — таймаут и повторный запуск', async ({
   await expect(page.locator('#timer')).toHaveText('00:60');
   await context.close();
 });
+
+
+test('iPhone — стартовый экран без скролла', async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+    hasTouch: true,
+    isMobile: true
+  });
+  const page = await context.newPage();
+  await page.goto('/');
+  await expect(page.locator('#startGameBtn')).toBeVisible();
+
+  const dims = await page.evaluate(() => ({
+    scrollH: document.documentElement.scrollHeight,
+    innerH: window.innerHeight,
+    bodyScrollH: document.body.scrollHeight,
+    overflow: getComputedStyle(document.body).overflow
+  }));
+  expect(dims.scrollH).toBeLessThanOrEqual(dims.innerH + 1);
+  expect(dims.bodyScrollH).toBeLessThanOrEqual(dims.innerH + 1);
+  expect(dims.overflow).toBe('hidden');
+
+  await context.close();
+});
