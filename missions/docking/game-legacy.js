@@ -35,8 +35,8 @@ const FUEL_RCS_COST = 0.05 * TARGET_FPS;     // Fuel cost per second for RCS
 // Canvas & World Constants
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
-const GROUND_Y = 550;         // Surface level
-const CSM_ORBIT_Y = 100;      // Height of CSM orbit
+const GROUND_Y = 385;         // Surface level; lower area is reserved for cockpit
+const CSM_ORBIT_Y = 65;       // Height of orbital module
 const CSM_SPEED = 0.7;        // Orbital speed of CSM (pixels per frame at 60fps, same unit as lm velocity)
 
 // Threshold Constants
@@ -1438,7 +1438,7 @@ function createGameController(options = {}) {
         var relX = Math.abs(relVxRaw);
         var relY = Math.abs(relVyRaw);
 
-        if (altitudeNow < 300) {
+        if (altitudeNow < 190) {
             phaseName.innerText = "ЭТАП 1 · ВЗЛЁТ";
             phaseHint.innerText = "Набери высоту до орбитального коридора. Используй ↑ короткими или длинными импульсами.";
             phaseProgress.innerText = "1 / 3";

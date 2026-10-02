@@ -2,7 +2,7 @@ name: Docking mission iPad compatibility
 
 on:
   push:
-    branches: ["feature/mission-docking"]
+    branches: ["feature/mission-docking", "fix/docking-mobile-cockpit"]
     paths:
       - "missions/docking/**"
       - "tests/docking-ipad.spec.js"
