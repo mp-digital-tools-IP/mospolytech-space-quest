@@ -14,7 +14,7 @@ const profiles = [
 ];
 
 for (const profile of profiles) {
-  test(profile.name + ' — основной сценарий', async ({ browser }) => {
+  test(profile.name + ' — финальный хаб помещается без скролла', async ({ browser }) => {
     const context = await browser.newContext({
       viewport: profile.viewport,
       userAgent: profile.userAgent,
@@ -27,71 +27,30 @@ for (const profile of profiles) {
     page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
 
     await page.goto('/');
-    await expect(page.locator('#start')).toHaveClass(/active/);
-    await expect(page.locator('.brand img').first()).toBeVisible();
+    await expect(page.locator('.logo')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'ПРОЙТИ ВСЕ 4' })).toBeVisible();
+    await expect(page.locator('.card')).toHaveCount(4);
+    await expect(page.getByText('Орбитальная стыковка')).toBeVisible();
+    await expect(page.getByText('Мягкая посадка')).toBeVisible();
+    await expect(page.getByText('Вывод на орбиту')).toBeVisible();
+    await expect(page.getByText('Очистка орбиты')).toBeVisible();
 
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    expect(overflow).toBeLessThanOrEqual(1);
-
-    await page.locator('#startGameBtn').tap();
-    await expect(page.locator('#play')).toHaveClass(/active/);
-
-    const targetSizes = await page.locator('.module, .slot').evaluateAll(nodes =>
-      nodes.map(n => {
-        const r = n.getBoundingClientRect();
-        return { w: r.width, h: r.height };
-      })
-    );
-    for (const size of targetSizes) {
-      expect(size.w).toBeGreaterThanOrEqual(44);
-      expect(size.h).toBeGreaterThanOrEqual(44);
-    }
-
-    await page.locator('.module[data-kind="wrong"]').first().tap();
-    await page.locator('#slot-energy').tap();
-    await expect(page.locator('#count')).toHaveText('0');
-
-    await page.locator('.module[data-kind="energy"]').tap();
-    await page.locator('#slot-energy').tap();
-    await expect(page.locator('#count')).toHaveText('1');
-
-    await page.locator('.module[data-kind="link"]').tap();
-    await page.locator('#slot-link').tap();
-    await expect(page.locator('#count')).toHaveText('2');
-
-    await page.locator('.module[data-kind="camera"]').tap();
-    await page.locator('#slot-camera').tap();
-    await expect(page.locator('#success')).toHaveClass(/active/);
-    await expect(page.getByText('Спутник готов')).toBeVisible();
-
-    await page.locator('#nextPlayerBtn').tap();
-    await expect(page.locator('#start')).toHaveClass(/active/);
+    const dims = await page.evaluate(() => ({
+      sw: document.documentElement.scrollWidth,
+      sh: document.documentElement.scrollHeight,
+      iw: window.innerWidth,
+      ih: window.innerHeight,
+      overflow: getComputedStyle(document.body).overflow
+    }));
+    expect(dims.sw).toBeLessThanOrEqual(dims.iw + 1);
+    expect(dims.sh).toBeLessThanOrEqual(dims.ih + 1);
+    expect(dims.overflow).toBe('hidden');
     expect(errors).toEqual([]);
     await context.close();
   });
 }
 
-test('iPad 2017 — таймаут и повторный запуск', async ({ browser }) => {
-  const context = await browser.newContext({
-    viewport: { width: 768, height: 1024 },
-    userAgent: profiles[0].userAgent,
-    hasTouch: true,
-    isMobile: true
-  });
-  const page = await context.newPage();
-  await page.goto('/');
-  await page.locator('#startGameBtn').tap();
-  await page.evaluate(() => { remaining = 1; });
-  await page.waitForTimeout(1200);
-  await expect(page.locator('#fail')).toHaveClass(/active/);
-  await page.getByRole('button', { name: 'ПОВТОРИТЬ' }).tap();
-  await expect(page.locator('#play')).toHaveClass(/active/);
-  await expect(page.locator('#timer')).toHaveText('00:60');
-  await context.close();
-});
-
-
-test('iPhone — стартовый экран без скролла', async ({ browser }) => {
+test('iPhone — хаб 2x2 без вертикального скролла', async ({ browser }) => {
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
     userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
@@ -100,17 +59,74 @@ test('iPhone — стартовый экран без скролла', async ({ 
   });
   const page = await context.newPage();
   await page.goto('/');
-  await expect(page.locator('#startGameBtn')).toBeVisible();
-
-  const dims = await page.evaluate(() => ({
-    scrollH: document.documentElement.scrollHeight,
-    innerH: window.innerHeight,
-    bodyScrollH: document.body.scrollHeight,
-    overflow: getComputedStyle(document.body).overflow
+  await expect(page.locator('.card')).toHaveCount(4);
+  const boxes = await page.locator('.card').evaluateAll(nodes => nodes.map(n => {
+    const r = n.getBoundingClientRect(); return { top:r.top, bottom:r.bottom, left:r.left, right:r.right };
   }));
-  expect(dims.scrollH).toBeLessThanOrEqual(dims.innerH + 1);
-  expect(dims.bodyScrollH).toBeLessThanOrEqual(dims.innerH + 1);
-  expect(dims.overflow).toBe('hidden');
+  expect(Math.max(...boxes.map(b => b.bottom))).toBeLessThanOrEqual(844);
+  const dims = await page.evaluate(() => ({ sh:document.documentElement.scrollHeight, ih:window.innerHeight, sw:document.documentElement.scrollWidth, iw:window.innerWidth }));
+  expect(dims.sh).toBeLessThanOrEqual(dims.ih + 1);
+  expect(dims.sw).toBeLessThanOrEqual(dims.iw + 1);
+  await context.close();
+});
+
+test('режим пройти все последовательно проводит через 4 миссии и показывает финал', async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 1024, height: 768 },
+    userAgent: profiles[1].userAgent,
+    hasTouch: true,
+    isMobile: true
+  });
+  const page = await context.newPage();
+  await page.goto('/campaign.html?step=0');
+  await expect(page.locator('#mission-label')).toHaveText('МИССИЯ 1 ИЗ 4');
+
+  async function winDocking() {
+    const frame = page.frames().find(f => /missions\/docking\/?$/.test(f.url()));
+    expect(frame).toBeTruthy();
+    await frame.evaluate(() => {
+      document.getElementById('msg-title').textContent = 'СТЫКОВКА ВЫПОЛНЕНА';
+      document.getElementById('msg-detail').textContent = 'Тестовый результат';
+      document.getElementById('message-overlay').style.display = 'block';
+    });
+  }
+  async function winResultMission(path, titleText) {
+    const re = new RegExp('missions/' + path + '/?$');
+    const frame = page.frames().find(f => re.test(f.url()));
+    expect(frame).toBeTruthy();
+    await frame.evaluate(({titleText}) => {
+      document.getElementById('result-title').textContent = titleText;
+      document.getElementById('result-text').textContent = 'Тестовый результат';
+      document.getElementById('result-overlay').className = 'overlay active';
+    }, {titleText});
+  }
+
+  await page.waitForTimeout(500);
+  await winDocking();
+  await expect(page.locator('#transition')).toHaveClass(/active/, { timeout: 2000 });
+  await page.locator('#next-btn').tap();
+  await expect(page).toHaveURL(/campaign\.html\?step=1/);
+  await page.waitForTimeout(500);
+
+  await winResultMission('landing', 'Мягкая посадка выполнена');
+  await expect(page.locator('#transition')).toHaveClass(/active/, { timeout: 2000 });
+  await page.locator('#next-btn').tap();
+  await expect(page).toHaveURL(/campaign\.html\?step=2/);
+  await page.waitForTimeout(500);
+
+  await winResultMission('orbit', 'Орбита стабилизирована');
+  await expect(page.locator('#transition')).toHaveClass(/active/, { timeout: 2000 });
+  await page.locator('#next-btn').tap();
+  await expect(page).toHaveURL(/campaign\.html\?step=3/);
+  await page.waitForTimeout(500);
+
+  await winResultMission('debris', 'Орбитальный сектор очищен');
+  await expect(page.locator('#transition')).toHaveClass(/active/, { timeout: 2000 });
+  await page.locator('#next-btn').tap();
+  await expect(page).toHaveURL(/\?complete=1$/);
+  await expect(page.locator('#final')).toHaveClass(/active/);
+  await expect(page.locator('.result')).toHaveCount(4);
+  await expect(page.getByText('Все четыре миссии выполнены')).toBeVisible();
 
   await context.close();
 });
