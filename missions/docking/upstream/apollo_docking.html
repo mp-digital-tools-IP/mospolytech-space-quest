@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apollo Ascent & Docking Simulator</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border: 2px solid #444;
+            width: 800px;
+            height: 600px;
+            transform-origin: center center;
+        }
+        canvas {
+            display: block;
+            background-color: #0b0b15; /* Dark space background */
+        }
+        #ui-layer {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            pointer-events: none;
+            text-shadow: 1px 1px 0 #000;
+        }
+        .stat-line {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        #message-overlay, #pause-overlay, #tutorial-overlay, #campaign-start-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            display: none;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border: 1px solid white;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        #campaign-start-overlay {
+            border-color: #ffd700;
+            min-width: 360px;
+        }
+        h1 { margin: 0 0 10px 0; font-size: 24px; color: #ffd700; }
+        p { margin: 5px 0; }
+        .instructions { font-size: 12px; color: #aaa; margin-top: 15px; }
+
+        #touch-controls {
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: all;
+        }
+        .touch-dpad {
+            position: relative;
+            width: 180px;
+            height: 180px;
+        }
+        .touch-btn {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            color: white;
+            font-size: 24px;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+        }
+        .touch-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.7);
+        }
+        .touch-up {
+            top: 0;
+            left: 60px;
+        }
+        .touch-down {
+            bottom: 0;
+            left: 60px;
+        }
+        .touch-left {
+            top: 60px;
+            left: 0;
+        }
+        .touch-right {
+            top: 60px;
+            right: 0;
+        }
+
+        /* Achievement System Styles */
+        #achievement-notification {
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            background: linear-gradient(135deg, rgba(40, 40, 60, 0.95), rgba(20, 20, 40, 0.95));
+            border: 2px solid #ffd700;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: none;
+            animation: slideIn 0.5s ease-out, glow 1.5s ease-in-out infinite;
+            max-width: 250px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.6); }
+        }
+        .achievement-header {
+            color: #ffd700;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .achievement-title {
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        .achievement-desc {
+            color: #aaa;
+            font-size: 11px;
+        }
+
+        #trophy-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 20px;
+            display: none;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .trophy-title {
+            color: #ffd700;
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        .trophy-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .trophy-item {
+            background: rgba(40, 40, 60, 0.8);
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 10px;
+            transition: all 0.2s;
+        }
+        .trophy-item.unlocked {
+            border-color: #ffd700;
+            background: rgba(60, 60, 40, 0.8);
+        }
+        .trophy-item.locked {
+            opacity: 0.5;
+        }
+        .trophy-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .trophy-name {
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .trophy-item.locked .trophy-name {
+            color: #666;
+        }
+        .trophy-description {
+            color: #888;
+            font-size: 10px;
+            margin-top: 3px;
+        }
+        .trophy-stats {
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #444;
+            color: #888;
+            font-size: 11px;
+        }
+        .trophy-close {
+            color: #666;
+            font-size: 10px;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <div id="ui-layer">
+        <div class="stat-line">Altitude: <span id="altitude">0</span> m</div>
+        <div class="stat-line">Vertical Vel: <span id="v-vel">0.0</span> m/s</div>
+        <div class="stat-line">Horizontal Vel: <span id="h-vel">0.0</span> m/s</div>
+        <div class="stat-line">Fuel: <span id="fuel">100</span>%</div>
+        <div class="stat-line" style="margin-top: 10px; border-top: 1px solid #444; padding-top: 5px;">
+            <div>Distance to CSM: <span id="distance-csm">-</span> m</div>
+            <div>Rel Vel X: <span id="rel-vx">0.0</span> m/s <span id="vx-hint" style="font-size: 10px;"></span></div>
+            <div>Rel Vel Y: <span id="rel-vy">0.0</span> m/s <span id="vy-hint" style="font-size: 10px;"></span></div>
+        </div>
+    </div>
+
+    <div id="message-overlay">
+        <h1 id="msg-title">Mission Status</h1>
+        <p id="msg-detail">Details here</p>
+        <p class="instructions">Press SPACE for Next Day</p>
+    </div>
+
+    <div id="campaign-start-overlay">
+        <h1 id="campaign-day-number" style="color: #ffd700; font-size: 28px; letter-spacing: 4px;">DAY 1</h1>
+        <div style="text-align: left; max-width: 320px; margin: 15px auto; line-height: 1.8;">
+            <div class="stat-line">Craft Condition: <span id="campaign-condition" style="color: #44ff44;">██████████ 100%</span></div>
+            <div class="stat-line">Fuel Budget: <span id="campaign-fuel-budget">100%</span></div>
+            <div class="stat-line">Supplies: <span id="campaign-supplies">███░░ 3</span></div>
+        </div>
+        <div id="campaign-modifier" style="margin: 15px 0; padding: 10px; border: 1px solid #444; font-size: 12px; color: #aaa;">
+            <strong>Standard Conditions</strong><br>No special conditions today.
+        </div>
+        <p class="instructions">Press SPACE to Begin Mission</p>
+        <button
+            id="new-campaign-button"
+            type="button"
+            style="font-size: 10px; color: #555; margin-top: 15px; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit;">
+            [ New Campaign ]
+        </button>
+        <script>
+            (function () {
+                var btn = document.getElementById('new-campaign-button');
+                if (btn) {
+                    btn.addEventListener('click', function () {
+                        document.dispatchEvent(new CustomEvent('newCampaign'));
+                    });
+                }
+            })();
+        </script>
+    </div>
+
+    <div id="pause-overlay">
+        <h1>PAUSED</h1>
+        <p>Press P or ESC to Resume</p>
+        <div class="instructions">
+            <p>Controls:</p>
+            <p>↑ Main Engine | ↓ RCS Down</p>
+            <p>← RCS Left | → RCS Right</p>
+            <p style="margin-top: 10px; color: #ffd700;">T - Trophy Room</p>
+        </div>
+    </div>
+
+    <div id="tutorial-overlay">
+        <h1>Apollo Docking Simulator</h1>
+        <div style="text-align: left; max-width: 420px; margin: 0 auto;">
+            <p><strong>Objective:</strong></p>
+            <p style="margin-left: 15px;">Dock your Lunar Module (LM) with the orbiting Command Module (CSM)</p>
+
+            <p style="margin-top: 15px;"><strong>How to Dock:</strong></p>
+            <p style="margin-left: 15px;">
+                1. Fly UP to reach the <span style="color: #336699;">blue CSM ORBIT line</span><br>
+                2. Match CSM horizontal speed (press → until Rel Vel X is green)<br>
+                3. Approach the <span style="color: #00aaff;">flashing docking port</span> from BELOW<br>
+                4. Slow down (both velocities must be green to dock safely)
+            </p>
+
+            <p style="margin-top: 15px;"><strong>Controls:</strong></p>
+            <p style="margin-left: 15px;">
+                ↑ Main Engine (thrust UP)<br>
+                ↓ Thrust DOWN (slow ascent)<br>
+                ← → Thrust LEFT/RIGHT (match CSM speed)<br>
+                P / ESC - Pause | T - Trophy Room
+            </p>
+
+            <p style="margin-top: 15px;"><strong>Visual Guides:</strong></p>
+            <p style="margin-left: 15px;">
+                • <span style="color: #666;">Gray line</span> = your predicted trajectory<br>
+                • <span style="color: #00aaff;">Blue circle + arrow</span> = docking port location<br>
+                • <span style="color: #44ff44;">Green</span> = safe velocity | <span style="color: #ff4444;">Red</span> = too fast
+            </p>
+        </div>
+        <p class="instructions" style="margin-top: 20px;">Press any key to start</p>
+    </div>
+
+    <div id="touch-controls">
+        <div class="touch-dpad">
+            <button class="touch-btn touch-up" data-key="ArrowUp">↑<br><span style="font-size: 8px;">MAIN</span></button>
+            <button class="touch-btn touch-left" data-key="ArrowLeft">←</button>
+            <button class="touch-btn touch-down" data-key="ArrowDown">↓</button>
+            <button class="touch-btn touch-right" data-key="ArrowRight">→</button>
+        </div>
+    </div>
+
+    <div id="achievement-notification">
+        <div class="achievement-header">Achievement Unlocked!</div>
+        <div class="achievement-title" id="achievement-name"></div>
+        <div class="achievement-desc" id="achievement-desc"></div>
+    </div>
+
+    <div id="trophy-overlay">
+        <div class="trophy-title">Trophy Room</div>
+        <div class="trophy-grid" id="trophy-grid"></div>
+        <div class="trophy-stats" id="trophy-stats"></div>
+        <div class="trophy-close">Press T or ESC to close</div>
+    </div>
+</div>
+
+<script>
+// Responsive scaling — fit 800×600 game to viewport
+(function() {
+    const GAME_W = 800, GAME_H = 600, PAD = 20;
+    function resize() {
+        const el = document.getElementById('game-container');
+        if (!el) return;
+        const scaleX = (window.innerWidth - PAD) / GAME_W;
+        const scaleY = (window.innerHeight - PAD) / GAME_H;
+        const scale = Math.min(scaleX, scaleY, 1);
+        el.style.transform = 'scale(' + scale + ')';
+    }
+    window.addEventListener('resize', resize);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', resize);
+    } else {
+        resize();
+    }
+})();
+</script>
+<script type="module" src="game.js"></script>
+</body>
+</html>
