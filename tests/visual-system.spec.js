@@ -49,8 +49,9 @@ test('campaign hides duplicate standalone mission navigation', async ({ browser 
   });
   const page = await context.newPage();
   await page.goto('/campaign.html?step=1');
-  const frame = page.frames().find(f => /missions\/landing\/?$/.test(f.url()));
-  expect(frame).toBeTruthy();
+  await expect(page.locator('#game')).toHaveAttribute('src', /missions\/landing\//);
+  const frame = page.frameLocator('#game');
+  await expect(frame.locator('#start-overlay')).toHaveClass(/active/);
   await expect(frame.locator('.mp-series-badge')).toBeHidden();
   await expect(frame.locator('.mp-home')).toBeHidden();
   await expect(page.locator('#mission-label')).toHaveText('МИССИЯ 2 ИЗ 4');
