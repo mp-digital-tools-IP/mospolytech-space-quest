@@ -33,6 +33,11 @@ for (const p of profiles) {
     await expect(page.locator('#touch-controls')).toBeVisible();
     await expect(page.locator('#mission-time')).toHaveText('90');
     await expect(page.locator('#phase-name')).toContainText('ЭТАП 1');
+    const cockpitBox=await page.locator('#cockpit').boundingBox();
+    const shellBox=await page.locator('#viewport-shell').boundingBox();
+    expect(cockpitBox).not.toBeNull();
+    expect(shellBox).not.toBeNull();
+    expect(cockpitBox.y).toBeGreaterThan(shellBox.y + shellBox.height * 0.60);
     const sizes=await page.locator('.touch-btn').evaluateAll(nodes=>nodes.map(n=>{
       const r=n.getBoundingClientRect(); return {w:r.width,h:r.height};
     }));
@@ -82,7 +87,7 @@ test('docking guidance progresses through three phases and success overlay works
   // Phase 2: sufficient altitude, still far from orbital module.
   await page.evaluate(() => {
     const lm=window.mpDockingGame.getLM();
-    lm.y=210; lm.x=220; lm.vx=0; lm.vy=0;
+    lm.y=160; lm.x=220; lm.vx=0; lm.vy=0;
   });
   await page.waitForTimeout(120);
   await expect(page.locator('#phase-name')).toContainText('ЭТАП 2');
@@ -91,7 +96,7 @@ test('docking guidance progresses through three phases and success overlay works
   await page.evaluate(() => {
     const lm=window.mpDockingGame.getLM();
     const csm=window.mpDockingGame.getCSM();
-    lm.x=csm.x; lm.y=205; lm.vx=csm.speed; lm.vy=0;
+    lm.x=csm.x; lm.y=130; lm.vx=csm.speed; lm.vy=0;
   });
   await page.waitForTimeout(120);
   await expect(page.locator('#phase-name')).toContainText('ЭТАП 3');
@@ -106,5 +111,25 @@ test('docking guidance progresses through three phases and success overlay works
   await expect(page.locator('#success-flash')).not.toHaveClass(/active/);
   await expect(page.locator('#message-overlay')).toBeVisible();
   await expect(page.locator('#msg-title')).toContainText('СТЫКОВКА ВЫПОЛНЕНА');
+  await context.close();
+});
+
+
+test('iPhone portrait fills viewport width without Safari double-shrink', async ({browser}) => {
+  const context=await browser.newContext({
+    viewport:{width:390,height:844},
+    userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+    hasTouch:true,
+    isMobile:true
+  });
+  const page=await context.newPage();
+  await page.goto('/missions/docking/');
+  const shell=await page.locator('#viewport-shell').boundingBox();
+  expect(shell).not.toBeNull();
+  expect(shell.width).toBeGreaterThan(370);
+  expect(shell.width).toBeLessThanOrEqual(390);
+  const docWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
+  expect(docWidth).toBeLessThanOrEqual(390);
+  await expect(page.locator('#rotate-note')).toBeVisible();
   await context.close();
 });
