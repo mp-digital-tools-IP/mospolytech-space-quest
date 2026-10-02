@@ -626,32 +626,46 @@ function drawLMAtPosition(ctx, x, y) {
     ctx.save();
     ctx.translate(x, y);
 
-    // Draw LM (Simple Polygon - Ascent Stage Shape)
-    ctx.fillStyle = '#D4AF37'; // Gold
+    // Main white pressure body
+    ctx.fillStyle = '#f5f7fa';
+    ctx.strokeStyle = '#c8cdd5';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    // Body
-    ctx.moveTo(-15, 15);
-    ctx.lineTo(15, 15);
-    ctx.lineTo(15, -5);
-    ctx.lineTo(10, -15);
-    ctx.lineTo(-10, -15);
-    ctx.lineTo(-15, -5);
+    ctx.moveTo(-16, 13);
+    ctx.lineTo(16, 13);
+    ctx.lineTo(13, -7);
+    ctx.lineTo(7, -16);
+    ctx.lineTo(-7, -16);
+    ctx.lineTo(-13, -7);
     ctx.closePath();
     ctx.fill();
-
-    // Stroke
-    ctx.strokeStyle = '#999';
-    ctx.lineWidth = 2;
     ctx.stroke();
 
+    // Moscow Polytech red engineering band
+    ctx.fillStyle = '#e51d2a';
+    ctx.fillRect(-15, 4, 30, 6);
+
     // Window
-    ctx.fillStyle = '#111';
+    ctx.fillStyle = '#121722';
     ctx.beginPath();
-    ctx.moveTo(-5, -5);
-    ctx.lineTo(0, -10);
-    ctx.lineTo(5, -5);
-    ctx.closePath();
+    ctx.arc(0, -5, 5, 0, Math.PI * 2);
     ctx.fill();
+    ctx.strokeStyle = '#5a6575';
+    ctx.stroke();
+
+    // Landing / RCS legs
+    ctx.strokeStyle = '#b8bec8';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-10, 12); ctx.lineTo(-18, 21); ctx.lineTo(-23, 21);
+    ctx.moveTo(10, 12); ctx.lineTo(18, 21); ctx.lineTo(23, 21);
+    ctx.stroke();
+
+    // MP mark
+    ctx.fillStyle = '#11141b';
+    ctx.font = 'bold 7px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('MP', 0, 2);
 
     ctx.restore();
 }
@@ -660,43 +674,45 @@ function drawCSMAtPosition(ctx, x, y) {
     ctx.save();
     ctx.translate(x, y);
 
-    // Service Module (Cylinder)
-    ctx.fillStyle = '#ccc';
-    ctx.fillRect(-20, -10, 30, 20);
+    // Solar arrays
+    ctx.fillStyle = '#183a66';
+    ctx.strokeStyle = '#6fa1d2';
+    ctx.lineWidth = 1;
+    ctx.fillRect(-62, -13, 34, 26);
+    ctx.strokeRect(-62, -13, 34, 26);
+    ctx.fillRect(28, -13, 34, 26);
+    ctx.strokeRect(28, -13, 34, 26);
+    ctx.strokeStyle = 'rgba(255,255,255,.22)';
+    for (var sx=-56; sx<=-34; sx+=7) { ctx.beginPath();ctx.moveTo(sx,-12);ctx.lineTo(sx,12);ctx.stroke(); }
+    for (var sx2=34; sx2<=56; sx2+=7) { ctx.beginPath();ctx.moveTo(sx2,-12);ctx.lineTo(sx2,12);ctx.stroke(); }
 
-    // Command Module (Cone) - pointing right (direction of travel)
-    ctx.fillStyle = '#eee';
-    ctx.beginPath();
-    ctx.moveTo(10, -10);
-    ctx.lineTo(25, 0);
-    ctx.lineTo(10, 10);
-    ctx.closePath();
-    ctx.fill();
+    // Central orbital module
+    ctx.fillStyle = '#eef1f5';
+    ctx.strokeStyle = '#aeb5c0';
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(-27, -12, 54, 24);
+    ctx.strokeRect(-27, -12, 54, 24);
 
-    // Engine Bell (back/left side)
-    ctx.fillStyle = '#444';
-    ctx.beginPath();
-    ctx.moveTo(-20, -5);
-    ctx.lineTo(-28, -8);
-    ctx.lineTo(-28, 8);
-    ctx.lineTo(-20, 5);
-    ctx.closePath();
-    ctx.fill();
+    ctx.fillStyle = '#e51d2a';
+    ctx.fillRect(-27, 4, 54, 5);
 
-    // DOCKING PORT - clearly marked on top of CSM
-    ctx.fillStyle = '#888';
-    ctx.fillRect(-5, -15, 10, 5);
+    // Docking port below module (target approached from below)
+    ctx.fillStyle = '#7c8591';
+    ctx.fillRect(-7, 12, 14, 6);
+    ctx.fillStyle = '#161922';
+    ctx.fillRect(-4, 16, 8, 4);
 
-    // Docking port opening
-    ctx.fillStyle = '#333';
-    ctx.fillRect(-3, -14, 6, 3);
+    ctx.fillStyle = '#151820';
+    ctx.font = 'bold 7px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('MP ORBIT', 0, -1);
 
     ctx.restore();
 }
 
-// ===== Celebration Effects =====
+    // ===== Celebration Effects =====
 function spawnCelebration(x, y, targetArray = celebrationParticles) {
-    const colors = ['#ff0', '#0f0', '#0ff', '#f0f', '#f90', '#fff'];
+    const colors = ['#e51d2a', '#ffffff', '#ff6b74', '#d7dce4', '#44ff88'];
     for (let i = 0; i < 50; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 2 + Math.random() * 4;
@@ -1188,53 +1204,66 @@ function createGameController(options = {}) {
     }
 
     function prepareCampaignDay() {
-        // Select modifier for day 1 if not set
-        if (!localCampaign.activeModifier) {
-            localCampaign.activeModifier = selectCampaignModifier(localCampaign);
-        }
-        localMissionConfig = createMissionConfigFromCampaign(localCampaign);
+        localMissionConfig = {
+            startingFuel: 100,
+            dockingThresholdX: 1.35,
+            dockingThresholdY: 1.35,
+            csmSpeed: 0.58,
+            rcsScale: 1
+        };
     }
 
     function showCampaignStart() {
         if (!campaignStartOverlay) return;
-
         prepareCampaignDay();
 
-        if (campaignDayNumber) campaignDayNumber.innerText = `DAY ${localCampaign.day}`;
+        if (campaignDayNumber) campaignDayNumber.innerText = "МИССИЯ MP-02";
         if (campaignCondition) {
-            const bar = '█'.repeat(Math.round(localCampaign.integrity / 10)) +
-                        '░'.repeat(10 - Math.round(localCampaign.integrity / 10));
-            campaignCondition.innerText = `${bar} ${localCampaign.integrity}%`;
-            campaignCondition.style.color = localCampaign.integrity > 50 ? '#44ff44' :
-                                            localCampaign.integrity > 25 ? '#ffff44' : '#ff4444';
+            campaignCondition.innerText = "ГОТОВ К СТАРТУ";
+            campaignCondition.style.color = "#44ff88";
         }
-        if (campaignFuelBudget) campaignFuelBudget.innerText = `${Math.floor(localMissionConfig.startingFuel)}%`;
-        if (campaignSupplies) campaignSupplies.innerText = `${'█'.repeat(localCampaign.supplies)}${'░'.repeat(CAMPAIGN_MAX_SUPPLIES - localCampaign.supplies)} ${localCampaign.supplies}`;
+        if (campaignFuelBudget) campaignFuelBudget.innerText = "100%";
+        if (campaignSupplies) campaignSupplies.innerText = "—";
 
-        if (campaignModifier && localCampaign.activeModifier) {
-            // Build content safely without using innerHTML to avoid DOM injection/XSS.
-            while (campaignModifier.firstChild) {
-                campaignModifier.removeChild(campaignModifier.firstChild);
-            }
-            const titleElement = document.createElement('strong');
-            titleElement.textContent = localCampaign.activeModifier.name;
+        if (campaignModifier) {
+            while (campaignModifier.firstChild) campaignModifier.removeChild(campaignModifier.firstChild);
+            var titleElement = document.createElement('strong');
+            titleElement.textContent = "Цель: орбитальная стыковка";
             campaignModifier.appendChild(titleElement);
             campaignModifier.appendChild(document.createElement('br'));
-            campaignModifier.appendChild(
-                document.createTextNode(localCampaign.activeModifier.description)
-            );
+            campaignModifier.appendChild(document.createTextNode(
+                "Подними аппарат, синхронизируй скорость с орбитальным модулем и выполни мягкую стыковку."
+            ));
         }
 
         campaignStartOverlay.style.display = 'block';
         localGameState = 'campaign_start';
+        var phaseName = document.getElementById('phase-name');
+        var phaseHint = document.getElementById('phase-hint');
+        var phaseProgress = document.getElementById('phase-progress');
+        if (phaseName) phaseName.innerText = "ПОДГОТОВКА";
+        if (phaseHint) phaseHint.innerText = "Запусти миссию";
+        if (phaseProgress) phaseProgress.innerText = "0 / 3";
     }
 
     function startDay() {
         if (campaignStartOverlay) campaignStartOverlay.style.display = 'none';
+        if (tutorialOverlay) tutorialOverlay.style.display = 'none';
         if (!localMissionConfig) prepareCampaignDay();
 
-        lm = createLM({ fuel: localMissionConfig.startingFuel, rcsScale: localMissionConfig.rcsScale });
-        csm = createCSM({ speed: localMissionConfig.csmSpeed });
+        lm = createLM({
+            x: 245,
+            y: GROUND_Y - 30,
+            vx: 0,
+            vy: 0,
+            fuel: localMissionConfig.startingFuel,
+            rcsScale: localMissionConfig.rcsScale
+        });
+        csm = createCSM({
+            x: 590,
+            y: CSM_ORBIT_Y,
+            speed: localMissionConfig.csmSpeed
+        });
         localParticles.length = 0;
         localCelebrationParticles.length = 0;
         localScreenShake = 0;
@@ -1277,86 +1306,46 @@ function createGameController(options = {}) {
     }
 
     function endGame(success, message, outcomeType) {
+        if (localGameState === 'won' || localGameState === 'lost') return;
         localGameState = success ? 'won' : 'lost';
         localOutcomeType = outcomeType || null;
 
+        var timeElapsed = Date.now() - localGameStartTime;
+        var csmSpeedNow = (csm.speed != null ? csm.speed : CSM_SPEED);
+        var relVxNow = Math.abs(lm.vx - csmSpeedNow);
+        var relVyNow = Math.abs(lm.vy);
+        var score = calculateScore(lm.fuel, timeElapsed, relVxNow, relVyNow);
+
         if (msgTitle) {
-            msgTitle.innerText = success ? "МИССИЯ ВЫПОЛНЕНА" : "МИССИЯ НЕ ВЫПОЛНЕНА";
-            msgTitle.style.color = success ? "#44ff44" : "#ff4444";
+            msgTitle.innerText = success ? "СТЫКОВКА ВЫПОЛНЕНА" : "МИССИЯ НЕ ВЫПОЛНЕНА";
+            msgTitle.style.color = success ? "#44ff88" : "#ff5a64";
         }
-        if (msgDetail) msgDetail.innerText = message;
+        if (msgDetail) {
+            var detail = message;
+            detail += "\n\nВремя: " + (timeElapsed / 1000).toFixed(1) + " с";
+            detail += "\nТопливо: " + Math.max(0, Math.floor(lm.fuel)) + "%";
+            if (success) {
+                detail += "\nТочность сближения: ΔVx " + (relVxNow * 10).toFixed(1) + " · ΔVy " + (relVyNow * 10).toFixed(1);
+                detail += "\nРейтинг миссии: " + score;
+            } else {
+                detail += "\nПопробуй ещё раз — управлять нужно короткими импульсами.";
+            }
+            msgDetail.innerText = detail;
+        }
+
+        var phaseName = document.getElementById('phase-name');
+        var phaseHint = document.getElementById('phase-hint');
+        var phaseProgress = document.getElementById('phase-progress');
+        if (phaseName) phaseName.innerText = success ? "МИССИЯ ВЫПОЛНЕНА" : "МИССИЯ ПРЕРВАНА";
+        if (phaseHint) phaseHint.innerText = success ? "Орбитальные модули состыкованы" : "Можно повторить попытку";
+        if (phaseProgress) phaseProgress.innerText = success ? "3 / 3" : "—";
 
         if (success) {
-            const timeElapsed = Date.now() - localGameStartTime;
-            const csmSpeed = (csm.speed != null ? csm.speed : CSM_SPEED);
-            const relVx = Math.abs(lm.vx - csmSpeed);
-            const relVy = Math.abs(lm.vy);
-            const score = calculateScore(lm.fuel, timeElapsed, relVx, relVy);
-
-            localAchievementData.totalDockings++;
-            if (score > localAchievementData.bestScore) {
-                localAchievementData.bestScore = score;
-            }
-            if (timeElapsed < localAchievementData.bestTime) {
-                localAchievementData.bestTime = timeElapsed;
-            }
-            saveAchievements(localAchievementData);
-
-            const stats = {
-                totalDockings: localAchievementData.totalDockings,
-                fuelRemaining: lm.fuel,
-                timeElapsed: timeElapsed,
-                relVx: relVx,
-                relVy: relVy,
-                score: score
-            };
-            const newAchievements = localCheckAchievements(stats);
-
-            if (msgDetail) {
-                msgDetail.innerText += `\n\nFuel Remaining: ${Math.floor(lm.fuel)}%`;
-                msgDetail.innerText += `\nTime: ${(timeElapsed / 1000).toFixed(1)}s`;
-                msgDetail.innerText += `\n\n⭐ SCORE: ${score}`;
-
-                if (newAchievements.length > 0) {
-                    msgDetail.innerText += `\n\n🏆 ${newAchievements.length} Achievement${newAchievements.length > 1 ? 's' : ''} Unlocked!`;
-                }
-
-                // Campaign day preview
-                const previewOutcome = {
-                    success: true,
-                    type: outcomeType || 'docking_success',
-                    fuelRemaining: lm.fuel,
-                    relVx, relVy, score
-                };
-                const preview = resolveCampaignDay(localCampaign, previewOutcome);
-                msgDetail.innerText += `\n\n─── Day ${localCampaign.day} Summary ───`;
-                msgDetail.innerText += `\nIntegrity: ${localCampaign.integrity}% → ${preview.campaign.integrity}%`;
-                msgDetail.innerText += `\nFuel Budget: ${localCampaign.fuelBudget}% → ${preview.campaign.fuelBudget}%`;
-                msgDetail.innerText += `\nSupplies: ${localCampaign.supplies} → ${preview.campaign.supplies}`;
-                if (preview.campaign.streak > 1) {
-                    msgDetail.innerText += `\n🔥 Streak: ${preview.campaign.streak} days`;
-                }
-            }
-
             playSound('dock_success');
             spawnCelebration(lm.x, lm.y, localCelebrationParticles);
         } else {
-            if (msgDetail) {
-                const previewOutcome = {
-                    success: false,
-                    type: outcomeType || 'unknown',
-                    fuelRemaining: lm.fuel,
-                    relVx: 0, relVy: 0, score: 0
-                };
-                const preview = resolveCampaignDay(localCampaign, previewOutcome);
-                msgDetail.innerText += `\n\n─── Day ${localCampaign.day} Summary ───`;
-                msgDetail.innerText += `\nIntegrity: ${localCampaign.integrity}% → ${preview.campaign.integrity}%`;
-                msgDetail.innerText += `\nFuel Budget: ${localCampaign.fuelBudget}% → ${preview.campaign.fuelBudget}%`;
-                msgDetail.innerText += `\nSupplies: ${localCampaign.supplies} → ${preview.campaign.supplies}`;
-            }
-
             playSound('collision');
-            localScreenShake = 15;
+            localScreenShake = 12;
         }
 
         if (msgOverlay) msgOverlay.style.display = 'block';
@@ -1394,19 +1383,48 @@ function createGameController(options = {}) {
         }
     }
 
+    function updateMissionPhase(distance, relVxRaw, relVyRaw) {
+        var phaseName = document.getElementById('phase-name');
+        var phaseHint = document.getElementById('phase-hint');
+        var phaseProgress = document.getElementById('phase-progress');
+        if (!phaseName || !phaseHint || !phaseProgress) return;
+
+        var altitudeNow = Math.max(0, GROUND_Y - (lm.y + 15));
+        var relX = Math.abs(relVxRaw);
+        var relY = Math.abs(relVyRaw);
+
+        if (altitudeNow < 300) {
+            phaseName.innerText = "ЭТАП 1 · ВЗЛЁТ";
+            phaseHint.innerText = "Набери высоту до орбитального коридора. Используй ↑ короткими или длинными импульсами.";
+            phaseProgress.innerText = "1 / 3";
+        } else if (distance > 175 || relX > 0.7) {
+            phaseName.innerText = "ЭТАП 2 · СИНХРОНИЗАЦИЯ";
+            phaseHint.innerText = relVxRaw < -0.15 ? "Орбитальный модуль уходит вперёд — добавь →" :
+                                 relVxRaw > 0.15 ? "Ты быстрее модуля — погаси скорость ←" :
+                                 "Скорости близки. Сокращай дистанцию и держи высоту.";
+            phaseProgress.innerText = "2 / 3";
+        } else {
+            phaseName.innerText = "ЭТАП 3 · СТЫКОВКА";
+            phaseHint.innerText = (relX < 0.5 && relY < 0.5) ?
+                "ЗЕЛЁНЫЙ КОРИДОР: мягко подведи аппарат к стыковочному узлу." :
+                "Снизь ΔV по обеим осям. Для финального контакта нужны зелёные значения.";
+            phaseProgress.innerText = "3 / 3";
+        }
+    }
+
     function updateUI() {
         if (!uiAltitude) return;
         var missionTimeEl = document.getElementById('mission-time');
         if (localGameState === 'playing') {
             var missionElapsed = Date.now() - localGameStartTime;
-            var secondsLeft = Math.max(0, 120 - Math.floor(missionElapsed / 1000));
+            var secondsLeft = Math.max(0, 90 - Math.floor(missionElapsed / 1000));
             if (missionTimeEl) missionTimeEl.innerText = secondsLeft;
-            if (missionElapsed >= 120000) {
+            if (missionElapsed >= 90000) {
                 endGame(false, "Время миссии истекло. Попробуй ещё раз и точнее рассчитай манёвр.", 'time_expired');
                 return;
             }
         } else if (missionTimeEl) {
-            missionTimeEl.innerText = "120";
+            missionTimeEl.innerText = "90";
         }
 
         uiAltitude.innerText = Math.max(0, Math.floor(GROUND_Y - (lm.y + 15)));
@@ -1425,11 +1443,13 @@ function createGameController(options = {}) {
         const relVyRaw = lm.vy;
         const relVy = Math.abs(relVyRaw);
 
+        updateMissionPhase(distance, relVxRaw, relVyRaw);
+
         uiRelVx.innerText = (relVx * 10).toFixed(1);
         uiRelVy.innerText = (relVy * 10).toFixed(1);
 
         if (relVx > 0.5) {
-            uiVxHint.innerText = relVxRaw < 0 ? '(press →)' : '(press ←)';
+            uiVxHint.innerText = relVxRaw < 0 ? '→' : '←';
             uiVxHint.style.color = '#ffaa00';
         } else {
             uiVxHint.innerText = '✓';
@@ -1437,7 +1457,7 @@ function createGameController(options = {}) {
         }
 
         if (relVy > 0.5) {
-            uiVyHint.innerText = relVyRaw > 0 ? '(press ↑)' : '(press ↓)';
+            uiVyHint.innerText = relVyRaw > 0 ? '↑' : '↓';
             uiVyHint.style.color = '#ffaa00';
         } else {
             uiVyHint.innerText = '✓';
@@ -1502,21 +1522,52 @@ function createGameController(options = {}) {
     function drawBackground() {
         ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-        const now = Date.now() / 1000;
-        starList.forEach(star => {
-            const alpha = 0.4 + 0.6 * ((Math.sin(now * star.speed + star.phase) + 1) / 2);
-            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-            ctx.fillRect(star.x, star.y, star.size, star.size);
-        });
+        var g = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
+        g.addColorStop(0, '#050812');
+        g.addColorStop(0.58, '#0a1020');
+        g.addColorStop(1, '#161622');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-        ctx.fillStyle = '#555';
-        ctx.fillRect(0, GROUND_Y, CANVAS_WIDTH, CANVAS_HEIGHT - GROUND_Y);
-        ctx.fillStyle = '#444';
+        var now = Date.now() / 1000;
+        for (var si = 0; si < starList.length; si++) {
+            var star = starList[si];
+            var alpha = 0.32 + 0.68 * ((Math.sin(now * star.speed + star.phase) + 1) / 2);
+            ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
+            ctx.fillRect(star.x, star.y, star.size, star.size);
+        }
+
+        // Distant Earth glow to give the scene depth.
+        var earthGlow = ctx.createRadialGradient(690, 540, 25, 690, 540, 170);
+        earthGlow.addColorStop(0, 'rgba(80,145,220,.26)');
+        earthGlow.addColorStop(0.55, 'rgba(31,77,130,.12)');
+        earthGlow.addColorStop(1, 'rgba(20,50,90,0)');
+        ctx.fillStyle = earthGlow;
         ctx.beginPath();
-        ctx.arc(100, GROUND_Y + 20, 30, 0, Math.PI*2);
-        ctx.arc(300, GROUND_Y + 40, 50, 0, Math.PI*2);
-        ctx.arc(600, GROUND_Y + 10, 20, 0, Math.PI*2);
+        ctx.arc(690, 540, 170, 0, Math.PI * 2);
         ctx.fill();
+
+        // Lunar surface
+        var lunar = ctx.createLinearGradient(0, GROUND_Y, 0, CANVAS_HEIGHT);
+        lunar.addColorStop(0, '#555964');
+        lunar.addColorStop(1, '#292c35');
+        ctx.fillStyle = lunar;
+        ctx.fillRect(0, GROUND_Y, CANVAS_WIDTH, CANVAS_HEIGHT - GROUND_Y);
+
+        // Horizon glow / launch site
+        ctx.fillStyle = 'rgba(229,29,42,.17)';
+        ctx.fillRect(180, GROUND_Y - 3, 135, 3);
+
+        ctx.fillStyle = '#3b3f49';
+        ctx.beginPath();
+        ctx.arc(95, GROUND_Y + 24, 34, 0, Math.PI*2);
+        ctx.arc(340, GROUND_Y + 42, 54, 0, Math.PI*2);
+        ctx.arc(655, GROUND_Y + 17, 26, 0, Math.PI*2);
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(255,255,255,.23)';
+        ctx.font = '10px Arial';
+        ctx.fillText('ПУСКОВАЯ ПЛОЩАДКА MP-02', 190, GROUND_Y + 20);
     }
 
     function drawCSMIndicator() {
@@ -1534,7 +1585,7 @@ function createGameController(options = {}) {
         ctx.textAlign = 'center';
         ctx.globalAlpha = 0.8;
 
-        const distText = `CSM: ${Math.floor(distance)}m`;
+        const distText = `МОДУЛЬ: ${Math.floor(distance)} м`;
         ctx.fillText(distText, CANVAS_WIDTH / 2, 20);
 
         if (Math.abs(dx) > 100) {
@@ -1681,7 +1732,7 @@ function createGameController(options = {}) {
         ctx.fillStyle = '#336699';
         ctx.font = '10px "Courier New"';
         ctx.globalAlpha = 0.6;
-        ctx.fillText('CSM ORBIT', CANVAS_WIDTH - 70, CSM_ORBIT_Y - 5);
+        ctx.fillText('ОРБИТА MP', CANVAS_WIDTH - 70, CSM_ORBIT_Y - 5);
         ctx.restore();
 
         drawTrajectoryPrediction();
