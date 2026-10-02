@@ -8,101 +8,144 @@
 <meta name="theme-color" content="#ffffff">
 <title>Московский Политех — Космическая миссия</title>
 <style>
-:root{--red:#e30613;--black:#111;--gray:#f2f2f2;--green:#178b4b}
+:root{--red:#e51d2a;--red-dark:#c91824;--black:#111214;--text:#171a20;--gray:#f3f5f8;--line:#dfe3e9;--muted:#69717c;--green:#178b4b}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#fff;color:#111}
-body{overflow-x:hidden}
-button{font:inherit;-webkit-appearance:none;appearance:none}
-.screen{display:none;min-height:100vh;padding:18px 22px;overflow-y:auto}
+html,body{margin:0;min-height:100%;width:100%;font-family:Arial,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#fff;color:var(--text)}
+body{overflow-x:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;-webkit-appearance:none;appearance:none;cursor:pointer}
+.screen{display:none;min-height:100vh;padding:20px 26px;position:relative;overflow:hidden}
 .screen.active{display:flex;flex-direction:column}
-.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.02em}
-.mark{width:44px;height:44px;background:var(--red);position:relative;flex:none}
-.mark:before{content:"";position:absolute;background:#fff;width:14px;height:44px;left:15px;top:0}
-.mark:after{content:"";position:absolute;background:var(--red);width:8px;height:22px;left:18px;top:11px}
-.brandtxt{line-height:.95;font-size:19px}
-.hero{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:820px;margin:auto;width:100%;padding:24px 0}
-.kicker{color:var(--red);font-weight:800;text-transform:uppercase;letter-spacing:.12em;font-size:14px}
-h1{font-size:54px;line-height:.98;margin:14px 0 18px;letter-spacing:-.04em}
-.lead{font-size:23px;line-height:1.35;max-width:680px;margin:0 0 28px}
-.primary{border:0;border-radius:18px;background:var(--red);color:white;padding:19px 28px;font-weight:800;font-size:21px;min-height:62px;box-shadow:0 8px 22px rgba(227,6,19,.18)}
-.secondary{border:2px solid #111;border-radius:16px;background:#fff;color:#111;padding:14px 22px;font-weight:750}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:15px}
-.progress{font-weight:800;font-size:17px}.timer{font-variant-numeric:tabular-nums;background:#111;color:#fff;border-radius:999px;padding:9px 14px;font-weight:800}
-.gamewrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:14px 0}
-.game{width:100%;max-width:980px;display:flex;gap:24px;align-items:center}
-.game>.card{flex:1.05}.game>.sat{flex:.95}
-.card{background:var(--gray);border-radius:26px;padding:22px}
-.mission h2{font-size:34px;margin:0 0 10px;line-height:1.05}
-.mission p{font-size:18px;line-height:1.4;margin:0}
-.sat{position:relative;height:350px;background:#f4f4f4;border:2px solid #e5e5e5;border-radius:28px;overflow:hidden}
-.body{position:absolute;width:150px;height:150px;left:50%;top:50%;transform:translate(-50%,-50%);border:5px solid #111;border-radius:24px;background:white;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;text-align:center}
-.slot{position:absolute;border:3px dashed #999;border-radius:18px;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;color:#777;padding:8px}
+.brand{display:flex;align-items:center;min-height:62px;position:relative;z-index:3}
+.brand img{display:block;width:238px;max-width:52vw;height:auto}
+.brand.compact img{width:188px;max-width:34vw}
+.redline{height:6px;background:var(--red);width:78px;border-radius:3px;margin-top:14px}
+.kicker{color:var(--red);font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-size:13px}
+.start-grid{flex:1;display:flex;align-items:center;justify-content:center;gap:48px;max-width:1120px;width:100%;margin:0 auto;padding:34px 0}
+.hero{width:56%;position:relative;z-index:2}
+h1{font-size:58px;line-height:.96;margin:14px 0 20px;letter-spacing:-.045em;color:var(--black)}
+.lead{font-size:22px;line-height:1.42;max-width:650px;margin:0 0 30px;color:#343942}
+.primary{border:0;border-radius:12px;background:var(--red);color:white;padding:18px 28px;font-weight:700;font-size:19px;min-height:58px;box-shadow:0 10px 24px rgba(229,29,42,.18)}
+.primary:active{background:var(--red-dark);transform:translateY(1px)}
+.secondary{border:1px solid #cfd4dc;border-radius:12px;background:#fff;color:#111;padding:15px 22px;font-weight:700}
+.orbit-stage{width:44%;max-width:430px;aspect-ratio:1/1;position:relative;display:flex;align-items:center;justify-content:center}
+.orbit-stage:before,.orbit-stage:after{content:"";position:absolute;border:2px solid #eceff3;border-radius:50%}
+.orbit-stage:before{width:92%;height:92%}
+.orbit-stage:after{width:64%;height:64%;border-color:#f3c3c7}
+.orbit-red{position:absolute;width:78%;height:28%;border:7px solid var(--red);border-left-color:transparent;border-right-color:transparent;border-radius:50%;transform:rotate(-18deg)}
+.orbit-core{width:142px;height:142px;border-radius:30px;background:var(--black);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-size:21px;font-weight:700;line-height:1.05;z-index:2;box-shadow:0 18px 50px rgba(17,18,20,.18)}
+.orbit-dot{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--red);right:15%;top:24%;z-index:3}
+.event-tag{position:absolute;right:0;bottom:18px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 15px;font-size:13px;line-height:1.25;box-shadow:0 8px 24px rgba(0,0,0,.06);z-index:3}
+.event-tag b{display:block;color:var(--red);font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;position:relative;z-index:3}
+.progress{font-weight:700;font-size:16px;white-space:nowrap}
+.timer{font-variant-numeric:tabular-nums;background:var(--black);color:#fff;border-radius:999px;padding:10px 15px;font-weight:700;white-space:nowrap}
+.gamewrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:18px 0}
+.game{width:100%;max-width:1100px;display:flex;gap:22px;align-items:stretch}
+.card{background:var(--gray);border:1px solid var(--line);border-radius:18px;padding:22px}
+.mission{flex:1.05}
+.mission h2{font-size:34px;margin:6px 0 12px;line-height:1.04;color:var(--black)}
+.mission p{font-size:17px;line-height:1.45;margin:0;color:#333942}
+.sat{flex:.95;position:relative;min-height:382px;background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 30px rgba(17,18,20,.04)}
+.sat:before,.sat:after{content:"";position:absolute;border:1px solid #eef0f3;border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%)}
+.sat:before{width:290px;height:290px}
+.sat:after{width:220px;height:220px}
+.body{position:absolute;width:150px;height:150px;left:50%;top:50%;transform:translate(-50%,-50%);border:4px solid var(--black);border-radius:22px;background:var(--black);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:19px;text-align:center;z-index:2}
+.body:after{content:"";position:absolute;height:7px;width:66%;background:var(--red);bottom:24px;left:17%;border-radius:4px}
+.slot{position:absolute;border:2px dashed #98a0aa;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;color:#707782;padding:8px;z-index:4;min-width:88px;min-height:64px}
 .slot.ok{border-style:solid;border-color:var(--green);color:var(--green);background:#eaf7f0}
-#slot-energy{width:135px;height:90px;left:18px;top:130px}
-#slot-link{width:120px;height:90px;right:22px;top:25px}
-#slot-camera{width:120px;height:90px;right:22px;bottom:25px}
-.modules{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
-.module{width:calc(50% - 6px);border:2px solid #111;background:#fff;border-radius:18px;min-height:86px;padding:12px;font-weight:850;font-size:16px;display:flex;align-items:center;justify-content:center;text-align:center;touch-action:manipulation}
-.module.selected{outline:5px solid rgba(227,6,19,.18);border-color:var(--red)}
-.module.used{opacity:.25;pointer-events:none}
+#slot-energy{width:132px;height:88px;left:18px;top:145px}
+#slot-link{width:120px;height:84px;right:20px;top:34px}
+#slot-camera{width:120px;height:84px;right:20px;bottom:34px}
+.modules{display:flex;flex-wrap:wrap;margin:14px -6px 0}
+.module{width:calc(50% - 12px);margin:6px;border:2px solid #15171b;background:#fff;border-radius:14px;min-height:82px;padding:10px;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;text-align:center;touch-action:manipulation}
+.module.selected{box-shadow:0 0 0 4px rgba(229,29,42,.16);border-color:var(--red)}
+.module.used{opacity:.28;pointer-events:none}
 .module.wrong{animation:wiggle .28s ease}
 @keyframes wiggle{0%{transform:translateX(0)}33%{transform:translateX(-8px)}66%{transform:translateX(8px)}100%{transform:translateX(0)}}
-.hint{font-size:14px;color:#666;margin-top:12px}
-.result{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px 0}
+.hint{font-size:13px;color:var(--muted);margin-top:12px}
+.result{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:28px 0;position:relative;z-index:2}
 .resultbox{max-width:760px}
-.badge{width:112px;height:112px;border-radius:50%;margin:0 auto 22px;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:54px;font-weight:900}
-.result h2{font-size:52px;line-height:1;margin:0 0 15px}
-.result p{font-size:21px;line-height:1.4}
-.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:25px}
-@media(max-width:760px){
- .screen{padding:14px}
+.badge{width:108px;height:108px;border-radius:28px;margin:0 auto 22px;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:700;box-shadow:0 12px 30px rgba(229,29,42,.2)}
+.result h2{font-size:52px;line-height:1;margin:10px 0 16px;color:var(--black)}
+.result p{font-size:20px;line-height:1.42;color:#3f454d}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+.corner-accent{position:absolute;right:-120px;top:-120px;width:340px;height:340px;border:46px solid #f7d7da;border-radius:50%;z-index:0}
+.footer-note{font-size:12px;color:#8a919a;position:relative;z-index:2}
+@media(max-width:820px){
+ .screen{padding:16px}
+ .start-grid{display:block;padding:24px 0 10px}
+ .hero{width:100%;padding-top:24px}
+ .orbit-stage{width:74%;max-width:380px;margin:20px auto 0}
+ h1{font-size:46px}.lead{font-size:19px}
  .game{display:block}
  .card{padding:16px;margin-bottom:12px}
  .mission h2{font-size:28px}.mission p{font-size:16px}
- .sat{height:310px}
- .body{width:125px;height:125px;font-size:17px}
- #slot-energy{width:112px;height:76px;left:8px;top:118px}
- #slot-link{width:105px;height:76px;right:8px;top:22px}
- #slot-camera{width:105px;height:76px;right:8px;bottom:22px}
- .module{width:calc(33.333% - 8px);min-height:70px;font-size:14px;padding:8px}
+ .sat{min-height:330px}
+ .body{width:128px;height:128px;font-size:17px}
+ #slot-energy{width:112px;height:76px;left:8px;top:126px}
+ #slot-link{width:106px;height:76px;right:8px;top:24px}
+ #slot-camera{width:106px;height:76px;right:8px;bottom:24px}
+ .module{width:calc(33.333% - 12px);min-height:72px;font-size:13px}
  .hint{display:none}
- h1{font-size:42px}.lead{font-size:19px}
+ .result h2{font-size:43px}
 }
-@media(max-width:420px){
- .topbar{gap:7px}.brandtxt{font-size:12px!important}.progress{font-size:14px}.timer{font-size:14px;padding:8px 10px}
+@media(max-width:520px){
+ .brand img{width:195px;max-width:62vw}.brand.compact img{width:142px;max-width:37vw}
+ .topbar{gap:7px}.progress{font-size:13px}.timer{font-size:13px;padding:8px 10px}
+ h1{font-size:38px}.lead{font-size:17px}
+ .orbit-stage{width:88%}.event-tag{font-size:11px}
  .mission h2{font-size:24px}
  .module{font-size:12px;min-height:66px}
- .sat{height:295px}
- h1{font-size:36px}
+ .sat{min-height:305px}
+ .result h2{font-size:36px}
 }
-@media(max-height:650px) and (min-width:761px){
- .sat{height:260px}.module{min-height:60px}.card{padding:14px}
+@media(max-height:720px) and (min-width:821px){
+ .screen{padding-top:14px;padding-bottom:14px}
+ .gamewrap{padding:10px 0}
+ .sat{min-height:315px}
+ .module{min-height:64px}
+ .card{padding:16px}
+ .mission h2{font-size:29px}
+ .mission p{font-size:15px}
 }
 </style>
 </head>
 <body>
 <section id="start" class="screen active">
-  <div class="brand"><div class="mark"></div><div class="brandtxt">МОСКОВСКИЙ<br>ПОЛИТЕХ</div></div>
-  <div class="hero">
-    <div class="kicker">Космический квест · 01</div>
-    <h1>Собери спутник<br>для миссии</h1>
-    <p class="lead">Ты — инженер миссии. Установи на аппарат три нужных модуля. На решение — 60 секунд.</p>
-    <button class="primary" onclick="startGame()">НАЧАТЬ МИССИЮ</button>
+  <div class="corner-accent"></div>
+  <div class="brand">
+    <img src="assets/polytech_logo_main_RGB_RUS.png" alt="Московский Политех">
   </div>
+  <div class="redline"></div>
+  <div class="start-grid">
+    <div class="hero">
+      <div class="kicker">Космический квест · инженерная миссия 01</div>
+      <h1>Собери спутник<br>для миссии</h1>
+      <p class="lead">Ты — инженер Московского Политеха. За 60 секунд собери конфигурацию спутника наблюдения Земли и подготовь аппарат к запуску.</p>
+      <button id="startGameBtn" class="primary" onclick="startGame()">НАЧАТЬ МИССИЮ</button>
+    </div>
+    <div class="orbit-stage" aria-hidden="true">
+      <div class="orbit-red"></div>
+      <div class="orbit-core">МОС<br>ПОЛИТЕХ</div>
+      <div class="orbit-dot"></div>
+      <div class="event-tag"><b>КосмоПрофи 2026</b>Ярмарка космических профессий</div>
+    </div>
+  </div>
+  <div class="footer-note">Инженерная задача · Московский Политех</div>
 </section>
 
 <section id="play" class="screen">
  <div class="topbar">
-   <div class="brand"><div class="mark" style="width:34px;height:34px"></div><div class="brandtxt" style="font-size:15px">МОСКОВСКИЙ<br>ПОЛИТЕХ</div></div>
+   <div class="brand compact"><img src="assets/polytech_logo_main_RGB_RUS.png" alt="Московский Политех"></div>
    <div class="progress">Установлено: <span id="count">0</span>/3</div>
    <div class="timer" id="timer">01:00</div>
  </div>
  <div class="gamewrap">
   <div class="game">
    <div class="card mission">
-    <div class="kicker">Задача</div>
+    <div class="kicker">Задача миссии</div>
     <h2>Спутник наблюдения Земли</h2>
-    <p>Аппарат должен <b>получать энергию</b>, <b>передавать данные</b> на Землю и <b>снимать поверхность</b>. Выбери нужные модули и укажи, куда их установить.</p>
+    <p>Аппарат должен <b>получать энергию</b>, <b>передавать данные</b> на Землю и <b>снимать поверхность</b>. Выбери три нужных модуля и установи каждый в подходящую функциональную зону.</p>
     <div class="modules" id="modules">
       <button class="module" data-kind="energy">☀️<br>Солнечная панель</button>
       <button class="module" data-kind="link">📡<br>Антенна связи</button>
@@ -111,7 +154,7 @@ h1{font-size:54px;line-height:.98;margin:14px 0 18px;letter-spacing:-.04em}
       <button class="module" data-kind="wrong">💡<br>Фара</button>
       <button class="module" data-kind="wrong">🛞<br>Колесо</button>
     </div>
-    <div class="hint">Сначала коснись модуля, затем подходящего места на аппарате.</div>
+    <div class="hint">Коснись модуля, затем — подходящего места на аппарате.</div>
    </div>
    <div class="sat">
      <div class="body">СПУТНИК<br>МП</div>
@@ -124,23 +167,24 @@ h1{font-size:54px;line-height:.98;margin:14px 0 18px;letter-spacing:-.04em}
 </section>
 
 <section id="success" class="screen">
- <div class="brand"><div class="mark"></div><div class="brandtxt">МОСКОВСКИЙ<br>ПОЛИТЕХ</div></div>
+ <div class="corner-accent"></div>
+ <div class="brand"><img src="assets/polytech_logo_main_RGB_RUS.png" alt="Московский Политех"></div>
  <div class="result"><div class="resultbox">
    <div class="badge">✓</div>
    <div class="kicker">Миссия выполнена</div>
    <h2>Спутник готов<br>к запуску</h2>
-   <p>Энергия, связь и наблюдение работают. Покажи этот экран представителю стенда и получи печать.</p>
-   <div class="actions"><button class="primary" onclick="resetGame()">СЛЕДУЮЩИЙ УЧАСТНИК</button></div>
+   <p>Энергия, связь и наблюдение работают. Покажи этот экран представителю стенда и получи печать в обходной лист.</p>
+   <div class="actions"><button id="nextPlayerBtn" class="primary" onclick="resetGame()">СЛЕДУЮЩИЙ УЧАСТНИК</button></div>
  </div></div>
 </section>
 
 <section id="fail" class="screen">
- <div class="brand"><div class="mark"></div><div class="brandtxt">МОСКОВСКИЙ<br>ПОЛИТЕХ</div></div>
+ <div class="brand"><img src="assets/polytech_logo_main_RGB_RUS.png" alt="Московский Политех"></div>
  <div class="result"><div class="resultbox">
-   <div class="badge" style="background:#111">!</div>
+   <div class="badge" style="background:#111214">!</div>
    <div class="kicker">Время вышло</div>
    <h2>Миссия требует<br>перезапуска</h2>
-   <p>Попробуй ещё раз: спутнику нужны энергия, связь и система наблюдения.</p>
+   <p>Попробуй ещё раз. Подсказка: аппарату нужны энергия, связь и система наблюдения.</p>
    <div class="actions"><button class="primary" onclick="startGame()">ПОВТОРИТЬ</button><button class="secondary" onclick="resetGame()">НА ГЛАВНУЮ</button></div>
  </div></div>
 </section>
@@ -153,8 +197,8 @@ function startGame(){
  selected=null;placed={};remaining=60;
  each('.module',function(m){m.classList.remove('selected');m.classList.remove('used');m.classList.remove('wrong')});
  each('.slot',function(s){s.classList.remove('ok');var a=s.getAttribute('data-accept');s.innerHTML=a==='energy'?'ЭНЕРГИЯ':a==='link'?'СВЯЗЬ':'НАБЛЮДЕНИЕ'});
- document.getElementById('count').innerHTML='0'; updateTimer(); show('play');
- clearInterval(tick); tick=setInterval(function(){remaining--;updateTimer();if(remaining<=0){clearInterval(tick);show('fail')}},1000);
+ document.getElementById('count').innerHTML='0';updateTimer();show('play');
+ clearInterval(tick);tick=setInterval(function(){remaining--;updateTimer();if(remaining<=0){clearInterval(tick);show('fail')}},1000);
 }
 function updateTimer(){var s=remaining<10?'0'+remaining:remaining;document.getElementById('timer').innerHTML='00:'+s}
 each('.module',function(m){
@@ -166,13 +210,13 @@ each('.module',function(m){
 });
 each('.slot',function(s){
  s.onclick=function(){
-  if(!selected || s.classList.contains('ok'))return;
+  if(!selected||s.classList.contains('ok'))return;
   var kind=selected.getAttribute('data-kind');
   if(kind===s.getAttribute('data-accept')){
     s.classList.add('ok');s.innerHTML=selected.innerHTML;selected.classList.add('used');selected.classList.remove('selected');placed[kind]=true;selected=null;
     var n=0;for(var k in placed){if(placed.hasOwnProperty(k))n++}
     document.getElementById('count').innerHTML=n;
-    if(n===3){clearInterval(tick);setTimeout(function(){show('success')},450)}
+    if(n===3){clearInterval(tick);setTimeout(function(){show('success')},350)}
   }else{
     var bad=selected;bad.classList.remove('wrong');void bad.offsetWidth;bad.classList.add('wrong');
   }

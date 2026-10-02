@@ -1,4 +1,4 @@
-name: Deploy static content to Pages
+name: Test on iPad profiles and deploy to Pages
 
 on:
   push:
@@ -12,10 +12,34 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
+  ipad-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install test dependencies
+        run: npm install
+      - name: Install WebKit
+        run: npx playwright install --with-deps webkit
+      - name: Run iPad WebKit tests
+        run: npm run test:ipad
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipad-test-artifacts
+          path: test-results/
+          if-no-files-found: ignore
+
   deploy:
+    needs: ipad-test
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

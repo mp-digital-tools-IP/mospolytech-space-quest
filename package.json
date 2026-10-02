@@ -1,0 +1,10 @@
+{
+  "name": "mospolytech-space-quest",
+  "private": true,
+  "scripts": {
+    "test:ipad": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.55.0"
+  }
+}
