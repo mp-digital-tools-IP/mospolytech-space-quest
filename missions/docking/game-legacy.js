@@ -583,11 +583,13 @@ function checkDockingCollision(lm, csm, missionConfig) {
     const lmTop = lm.y - 15;
     const lmBottom = lm.y + 15;
 
-    // CSM docking port zone (top of CSM, centered horizontally)
+    // Docking port is on the lower side of the orbital module.
+    // This makes the actual collision geometry match the player instruction:
+    // approach the target from below.
     const dockingZoneLeft = csm.x - 15;
     const dockingZoneRight = csm.x + 15;
-    const dockingZoneTop = csm.y - 25;
-    const dockingZoneBottom = csm.y - 5;
+    const dockingZoneTop = csm.y + 5;
+    const dockingZoneBottom = csm.y + 25;
 
     // Check if LM is in docking zone (approaching from below)
     const inDockingZone = (lmRight > dockingZoneLeft && lmLeft < dockingZoneRight &&
@@ -670,6 +672,35 @@ function drawLMAtPosition(ctx, x, y) {
     ctx.restore();
 }
 
+function drawMainEngineFlame(ctx, x, y, intensity) {
+    ctx.save();
+    ctx.translate(x, y + 18);
+    var flicker = 0.82 + Math.random() * 0.32;
+    var length = (26 + intensity * 20) * flicker;
+
+    var glow = ctx.createLinearGradient(0, 0, 0, length);
+    glow.addColorStop(0, 'rgba(255,255,255,.95)');
+    glow.addColorStop(0.22, 'rgba(255,218,120,.95)');
+    glow.addColorStop(0.58, 'rgba(229,29,42,.86)');
+    glow.addColorStop(1, 'rgba(229,29,42,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.moveTo(-7, 0);
+    ctx.quadraticCurveTo(-10, length * .42, 0, length);
+    ctx.quadraticCurveTo(10, length * .42, 7, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,.72)';
+    ctx.beginPath();
+    ctx.moveTo(-3, 1);
+    ctx.quadraticCurveTo(-4, length * .28, 0, length * .58);
+    ctx.quadraticCurveTo(4, length * .28, 3, 1);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+
 function drawCSMAtPosition(ctx, x, y) {
     ctx.save();
     ctx.translate(x, y);
@@ -698,9 +729,9 @@ function drawCSMAtPosition(ctx, x, y) {
 
     // Docking port below module (target approached from below)
     ctx.fillStyle = '#7c8591';
-    ctx.fillRect(-7, 12, 14, 6);
+    ctx.fillRect(-7, 12, 14, 7);
     ctx.fillStyle = '#161922';
-    ctx.fillRect(-4, 16, 8, 4);
+    ctx.fillRect(-4, 18, 8, 5);
 
     ctx.fillStyle = '#151820';
     ctx.font = 'bold 7px Arial';
@@ -1343,12 +1374,26 @@ function createGameController(options = {}) {
         if (success) {
             playSound('dock_success');
             spawnCelebration(lm.x, lm.y, localCelebrationParticles);
+            var successFlash = document.getElementById('success-flash');
+            if (successFlash) {
+                successFlash.className = 'active';
+                setTimeout(function(){ successFlash.className = ''; }, 900);
+            }
+            try {
+                if (navigator.vibrate) navigator.vibrate([40, 30, 80]);
+            } catch (e) {}
         } else {
             playSound('collision');
             localScreenShake = 12;
         }
 
-        if (msgOverlay) msgOverlay.style.display = 'block';
+        if (msgOverlay) {
+            if (success) {
+                setTimeout(function(){ msgOverlay.style.display = 'block'; }, 850);
+            } else {
+                msgOverlay.style.display = 'block';
+            }
+        }
     }
 
     function resetGame() {
@@ -1660,18 +1705,18 @@ function createGameController(options = {}) {
         ctx.lineWidth = 2;
 
         ctx.beginPath();
-        ctx.moveTo(0, -20);
-        ctx.lineTo(0, -40);
+        ctx.moveTo(0, 20);
+        ctx.lineTo(0, 43);
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.moveTo(-6, -28);
-        ctx.lineTo(0, -20);
-        ctx.lineTo(6, -28);
+        ctx.moveTo(-6, 34);
+        ctx.lineTo(0, 43);
+        ctx.lineTo(6, 34);
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.arc(0, -12, 12, 0, Math.PI * 2);
+        ctx.arc(0, 15, 12, 0, Math.PI * 2);
         ctx.stroke();
 
         ctx.restore();
@@ -1753,10 +1798,10 @@ function createGameController(options = {}) {
             ctx.setLineDash([5, 10]);
 
             ctx.beginPath();
-            ctx.moveTo(csm.x - 20, csm.y - 25);
-            ctx.lineTo(csm.x - 40, csm.y + 100);
-            ctx.moveTo(csm.x + 20, csm.y - 25);
-            ctx.lineTo(csm.x + 40, csm.y + 100);
+            ctx.moveTo(csm.x - 16, csm.y + 22);
+            ctx.lineTo(csm.x - 44, csm.y + 135);
+            ctx.moveTo(csm.x + 16, csm.y + 22);
+            ctx.lineTo(csm.x + 44, csm.y + 135);
             ctx.stroke();
             ctx.setLineDash([]);
             ctx.restore();
@@ -1769,7 +1814,7 @@ function createGameController(options = {}) {
                 ctx.globalAlpha = 0.6;
                 ctx.beginPath();
                 ctx.moveTo(lm.x, lm.y);
-                ctx.lineTo(csm.x, csm.y - 15);
+                ctx.lineTo(csm.x, csm.y + 20);
                 ctx.stroke();
                 ctx.setLineDash([]);
                 ctx.restore();
@@ -1780,13 +1825,13 @@ function createGameController(options = {}) {
             ctx.lineWidth = 2;
             ctx.globalAlpha = 0.5;
             ctx.beginPath();
-            ctx.arc(csm.x, csm.y - 15, 25, 0, Math.PI * 2);
+            ctx.arc(csm.x, csm.y + 20, 25, 0, Math.PI * 2);
             ctx.stroke();
             ctx.strokeStyle = '#ffff44';
             ctx.lineWidth = 1;
             ctx.globalAlpha = 0.3;
             ctx.beginPath();
-            ctx.arc(csm.x, csm.y - 15, 50, 0, Math.PI * 2);
+            ctx.arc(csm.x, csm.y + 20, 50, 0, Math.PI * 2);
             ctx.stroke();
             ctx.restore();
         }
@@ -1858,6 +1903,9 @@ function createGameController(options = {}) {
         localParticles.forEach(p => p.draw(ctx));
 
         csm.draw(ctx);
+        if (localGameState === 'playing' && localKeys['ArrowUp'] && lm.fuel > 0) {
+            drawMainEngineFlame(ctx, lm.x, lm.y, 1);
+        }
         lm.draw(ctx);
 
         if (lm.x < LM_GHOST_THRESHOLD) {
@@ -1921,6 +1969,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         if (game.init()) {
             window.mpDockingGame = game;
             window.mpDockingStart = function() { game.startDay(); };
+            window.mpDockingLaunchVibrate = function() {
+                try { if (navigator.vibrate) navigator.vibrate(45); } catch (e) {}
+            };
             window.mpDockingReset = function() { game.resetGame(); };
             window.mpDockingHideTutorial = function() {
                 var overlay = document.getElementById('tutorial-overlay');
