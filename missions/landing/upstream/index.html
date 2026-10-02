@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <title>Lunar Lander</title>
+        <meta charset="utf-8" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
+        <link rel="shortcut icon" href="img/favicon.ico" />
+    </head>
+
+    <body>
+        <div id="UI">
+            <div id="level">Choose level</div>
+            <div id="fuel">Fuel:0</div>
+            <div id="angle">Angle:0</div>
+            <div id="velocity">Velocity:0</div>
+        </div>
+        <div id="welcome">
+            <h1>Welcome to Lunar Lander</h1>
+            <p>
+                Use the arrow keys to land the lander smoothly. Otherwise, you
+                will crash!
+            </p>
+            <div>
+                <button id="EASY">Easy</button>
+                <button id="MEDIUM">Medium</button>
+                <button id="HARD">Hard</button>
+            </div>
+        </div>
+        <div id="gameover"></div>
+        <canvas id="canvas"></canvas>
+    </body>
+    <script type="module" src="js/main.js"></script>
+</html>
