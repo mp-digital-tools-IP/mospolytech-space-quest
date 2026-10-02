@@ -3,6 +3,8 @@ name: Test on iPad profiles and deploy to Pages
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +13,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "pages-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
@@ -39,6 +41,7 @@ jobs:
           if-no-files-found: ignore
 
   deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: ipad-test
     environment:
       name: github-pages
