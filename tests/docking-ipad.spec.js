@@ -26,6 +26,9 @@ for (const p of profiles) {
       await page.getByRole('button',{name:'ПОНЯТНО, К МИССИИ'}).tap();
     }
     await page.getByRole('button',{name:'НАЧАТЬ СТЫКОВКУ'}).tap();
+    await expect(page.locator('#launch-overlay')).toHaveClass(/active/);
+    await expect(page.locator('#launch-count')).toContainText('3');
+    await page.waitForTimeout(3200);
 
     await expect(page.locator('#touch-controls')).toBeVisible();
     await expect(page.locator('#mission-time')).toHaveText('90');
@@ -74,6 +77,7 @@ test('docking guidance progresses through three phases and success overlay works
     await page.getByRole('button',{name:'ПОНЯТНО, К МИССИИ'}).tap();
   }
   await page.getByRole('button',{name:'НАЧАТЬ СТЫКОВКУ'}).tap();
+  await page.waitForTimeout(3200);
 
   // Phase 2: sufficient altitude, still far from orbital module.
   await page.evaluate(() => {
@@ -96,9 +100,10 @@ test('docking guidance progresses through three phases and success overlay works
   await page.evaluate(() => {
     const lm=window.mpDockingGame.getLM();
     const csm=window.mpDockingGame.getCSM();
-    lm.x=csm.x; lm.y=csm.y+12; lm.vx=csm.speed; lm.vy=0;
+    lm.x=csm.x; lm.y=csm.y+20; lm.vx=csm.speed; lm.vy=0;
   });
-  await page.waitForTimeout(180);
+  await page.waitForTimeout(1150);
+  await expect(page.locator('#success-flash')).not.toHaveClass(/active/);
   await expect(page.locator('#message-overlay')).toBeVisible();
   await expect(page.locator('#msg-title')).toContainText('СТЫКОВКА ВЫПОЛНЕНА');
   await context.close();
