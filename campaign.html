@@ -18,13 +18,13 @@ body{display:flex;flex-direction:column;overscroll-behavior:none}
 iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#070911}
 .transition{position:absolute;inset:0;z-index:20;background:rgba(4,5,10,.95);display:none;align-items:center;justify-content:center;padding:22px}.transition.active{display:flex}
 .box{width:560px;max-width:94%;text-align:center;background:#11141d;border:1px solid #404651;border-radius:18px;padding:26px;box-shadow:0 24px 70px rgba(0,0,0,.45)}
-.check{width:78px;height:78px;border-radius:22px;background:#178b4b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:39px;font-weight:900;margin:0 auto 14px}.kicker{color:#e51d2a;text-transform:uppercase;letter-spacing:.12em;font-size:10px;font-weight:800}.box h1{font-size:30px;line-height:1.02;margin:8px 0 10px}.box p{color:#c8cdd4;font-size:14px;line-height:1.42;margin:0 0 15px}.next{min-height:52px;border:0;border-radius:11px;background:#e51d2a;color:#fff;font-weight:900;font-size:15px;padding:0 22px}.sub{font-size:10px;color:#858c96;margin-top:10px}
+.check{width:78px;height:78px;border-radius:22px;background:#178b4b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:39px;font-weight:900;margin:0 auto 14px}.kicker{color:#e51d2a;text-transform:uppercase;letter-spacing:.12em;font-size:10px;font-weight:800}.box h1{font-size:30px;line-height:1.02;margin:8px 0 10px}.box p{color:#c8cdd4;font-size:14px;line-height:1.42;margin:0 0 15px}.box p b{color:#fff}.next{min-height:52px;border:0;border-radius:11px;background:#e51d2a;color:#fff;font-weight:900;font-size:15px;padding:0 22px}.sub{font-size:10px;color:#858c96;margin-top:10px;min-height:14px}.count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:9px;background:#252a33;color:#fff;font-weight:900;margin:0 2px}
 @media(max-width:600px){.top{height:44px;min-height:44px;padding:0 8px;gap:8px}.logo{display:none}.home{min-width:64px;height:32px;font-size:10px}.progress-top{font-size:9px}.box{padding:20px}.box h1{font-size:26px}}
 </style>
 </head>
 <body>
 <header class="top">
-  <a class="home" href="./">← МИССИИ</a>
+  <a class="home" id="home-link" href="./">← МИССИИ</a>
   <div class="progress">
     <div class="progress-top"><b id="mission-label">МИССИЯ 1 ИЗ 4</b><span id="mission-name">Орбитальная стыковка</span></div>
     <div class="bar"><div class="fill" id="fill"></div></div>
@@ -33,14 +33,14 @@ iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#070
 </header>
 <div class="framewrap">
   <iframe id="game" title="Космическая миссия" scrolling="no" allow="autoplay"></iframe>
-  <div class="transition" id="transition">
+  <div class="transition" id="transition" aria-live="assertive">
     <div class="box">
       <div class="check">✓</div>
       <div class="kicker" id="done-kicker">Миссия 1 из 4 выполнена</div>
       <h1 id="done-title">Орбитальная стыковка</h1>
       <p id="done-detail">Результат зафиксирован. Переходим к следующей инженерной задаче.</p>
       <button class="next" id="next-btn" type="button">СЛЕДУЮЩАЯ МИССИЯ</button>
-      <div class="sub" id="auto-note">Автопереход через 4 секунды</div>
+      <div class="sub" id="auto-note">Автопереход через <span class="count">4</span> сек</div>
     </div>
   </div>
 </div>
@@ -57,9 +57,10 @@ function param(name){var m=new RegExp('[?&]'+name+'=([^&]+)').exec(location.sear
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function safeRead(){try{return JSON.parse(sessionStorage.getItem('mp_space_campaign')||'null')}catch(e){return null}}
 function safeWrite(v){try{sessionStorage.setItem('mp_space_campaign',JSON.stringify(v))}catch(e){}}
+function safeClear(){try{sessionStorage.removeItem('mp_space_campaign')}catch(e){}}
 var step=clamp(parseInt(param('step')||'0',10)||0,0,3);
 var game=document.getElementById('game'),transition=document.getElementById('transition');
-var current=MISSIONS[step],completeHandled=false,autoTimer=null,pollTimer=null,missionStarted=Date.now();
+var current=MISSIONS[step],completeHandled=false,autoTimer=null,countTimer=null,pollTimer=null,missionStarted=Date.now(),lastSeconds=0;
 var state=safeRead();
 if(!state||step===0){state={startedAt:Date.now(),results:{}};safeWrite(state)}
 function updateTop(){document.getElementById('mission-label').innerHTML='МИССИЯ '+(step+1)+' ИЗ 4';document.getElementById('mission-name').innerHTML=current.name;document.getElementById('fill').style.width=((step+1)*25)+'%'}
@@ -75,20 +76,28 @@ function checkSuccess(){
  if(txt.indexOf(current.success)===-1)return;
  completeHandled=true;if(pollTimer)clearInterval(pollTimer);
  var detail=doc.getElementById(current.detail),detailText=detail?(detail.textContent||detail.innerText||''):'';
+ lastSeconds=Math.max(1,Math.round((Date.now()-missionStarted)/1000));
  state=safeRead()||{startedAt:Date.now(),results:{}};if(!state.results)state.results={};
- state.results[current.id]={seconds:Math.max(1,Math.round((Date.now()-missionStarted)/1000)),detail:detailText};safeWrite(state);
+ state.results[current.id]={seconds:lastSeconds,detail:detailText};safeWrite(state);
  showTransition();
 }
+function setCountdown(n,last){document.getElementById('auto-note').innerHTML=(last?'Финальный экран':'Следующая миссия')+' через <span class="count">'+n+'</span> сек'}
 function showTransition(){
+ var last=step===3;
  document.getElementById('done-kicker').innerHTML='МИССИЯ '+(step+1)+' ИЗ 4 ВЫПОЛНЕНА';
  document.getElementById('done-title').innerHTML=current.name;
- var last=step===3;document.getElementById('next-btn').innerHTML=last?'ПОКАЗАТЬ ИТОГ':'СЛЕДУЮЩАЯ МИССИЯ';document.getElementById('auto-note').innerHTML=last?'Финальный экран откроется автоматически':'Автопереход через 4 секунды';
+ document.getElementById('done-detail').innerHTML='Результат зафиксирован · <b>'+lastSeconds+' сек</b>. '+(last?'Маршрут 4/4 завершён.':'Готовим следующую инженерную задачу.');
+ document.getElementById('next-btn').innerHTML=last?'ПОКАЗАТЬ ИТОГ':'ПЕРЕЙТИ СЕЙЧАС';
  transition.className='transition active';
+ var remain=4;setCountdown(remain,last);
+ if(countTimer)clearInterval(countTimer);countTimer=setInterval(function(){remain--;if(remain>0)setCountdown(remain,last);else{clearInterval(countTimer);countTimer=null}},1000);
  if(autoTimer)clearTimeout(autoTimer);autoTimer=setTimeout(next,4000);
 }
-function next(){if(autoTimer){clearTimeout(autoTimer);autoTimer=null}if(step>=3){location.href='./?complete=1';return}location.href='campaign.html?step='+(step+1)}
+function next(){if(autoTimer){clearTimeout(autoTimer);autoTimer=null}if(countTimer){clearInterval(countTimer);countTimer=null}if(step>=3){location.href='./?complete=1';return}location.href='campaign.html?step='+(step+1)}
 document.getElementById('next-btn').onclick=next;
+document.getElementById('home-link').onclick=function(){safeClear()};
 game.onload=function(){missionStarted=Date.now()};
+window.onbeforeunload=function(){if(autoTimer)clearTimeout(autoTimer);if(countTimer)clearInterval(countTimer);if(pollTimer)clearInterval(pollTimer)};
 load();
 })();
 </script>
