@@ -28,6 +28,8 @@ for (const p of profiles) {
     await page.getByRole('button',{name:'НАЧАТЬ СТЫКОВКУ'}).tap();
 
     await expect(page.locator('#touch-controls')).toBeVisible();
+    await expect(page.locator('#mission-time')).toHaveText('90');
+    await expect(page.locator('#phase-name')).toContainText('ЭТАП 1');
     const sizes=await page.locator('.touch-btn').evaluateAll(nodes=>nodes.map(n=>{
       const r=n.getBoundingClientRect(); return {w:r.width,h:r.height};
     }));
@@ -56,4 +58,48 @@ test('legacy bundle has no module/nullish/object spread dependency', async ({pag
   expect(text).not.toContain('{ ...campaign }');
   const html = await page.request.get('/missions/docking/').then(r=>r.text());
   expect(html).not.toContain('type="module"');
+});
+
+
+test('docking guidance progresses through three phases and success overlay works', async ({browser}) => {
+  const context = await browser.newContext({
+    viewport:{width:1024,height:768},
+    userAgent:'Mozilla/5.0 (iPad; CPU OS 11_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15F79 Safari/604.1',
+    hasTouch:true,
+    isMobile:true
+  });
+  const page=await context.newPage();
+  await page.goto('/missions/docking/');
+  if (await page.locator('#tutorial-overlay').isVisible()) {
+    await page.getByRole('button',{name:'ПОНЯТНО, К МИССИИ'}).tap();
+  }
+  await page.getByRole('button',{name:'НАЧАТЬ СТЫКОВКУ'}).tap();
+
+  // Phase 2: sufficient altitude, still far from orbital module.
+  await page.evaluate(() => {
+    const lm=window.mpDockingGame.getLM();
+    lm.y=210; lm.x=220; lm.vx=0; lm.vy=0;
+  });
+  await page.waitForTimeout(120);
+  await expect(page.locator('#phase-name')).toContainText('ЭТАП 2');
+
+  // Phase 3: close range with matched horizontal speed.
+  await page.evaluate(() => {
+    const lm=window.mpDockingGame.getLM();
+    const csm=window.mpDockingGame.getCSM();
+    lm.x=csm.x; lm.y=205; lm.vx=csm.speed; lm.vy=0;
+  });
+  await page.waitForTimeout(120);
+  await expect(page.locator('#phase-name')).toContainText('ЭТАП 3');
+
+  // Safe docking state.
+  await page.evaluate(() => {
+    const lm=window.mpDockingGame.getLM();
+    const csm=window.mpDockingGame.getCSM();
+    lm.x=csm.x; lm.y=csm.y+12; lm.vx=csm.speed; lm.vy=0;
+  });
+  await page.waitForTimeout(180);
+  await expect(page.locator('#message-overlay')).toBeVisible();
+  await expect(page.locator('#msg-title')).toContainText('СТЫКОВКА ВЫПОЛНЕНА');
+  await context.close();
 });
