@@ -30,10 +30,12 @@ for (const profile of profiles) {
     await expect(page.locator('.logo')).toBeVisible();
     await expect(page.getByRole('link', { name: 'ПРОЙТИ ВСЕ 4' })).toBeVisible();
     await expect(page.locator('.card')).toHaveCount(4);
-    await expect(page.getByText('Орбитальная стыковка')).toBeVisible();
-    await expect(page.getByText('Мягкая посадка')).toBeVisible();
-    await expect(page.getByText('Вывод на орбиту')).toBeVisible();
-    await expect(page.getByText('Очистка орбиты')).toBeVisible();
+    await expect(page.locator('.card h2')).toHaveText([
+      'Орбитальная стыковка',
+      'Мягкая посадка',
+      'Вывод на орбиту',
+      'Очистка орбиты'
+    ]);
 
     const dims = await page.evaluate(() => ({
       sw: document.documentElement.scrollWidth,
