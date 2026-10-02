@@ -25,6 +25,20 @@ canvas{display:block;width:800px;height:600px;background:#0b0b15}
 #phase-hint{font-size:11px;color:#e3e6eb;line-height:1.25;margin-top:3px}
 #phase-progress{position:absolute;right:9px;top:8px;color:#7f8791;font-size:10px;font-weight:700}
 #phase-panel:after{content:"";display:block;height:2px;width:42%;margin:7px auto 0;background:#e51d2a;border-radius:2px}
+#launch-overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:40;background:radial-gradient(circle at 50% 58%,rgba(229,29,42,.17),rgba(5,6,12,.97) 55%);pointer-events:none}
+#launch-overlay.active{display:flex}
+#launch-count{font-size:132px;font-weight:900;line-height:1;color:#fff;letter-spacing:-.06em;text-shadow:0 0 34px rgba(229,29,42,.45);transform:scale(.82);opacity:0}
+#launch-count.pulse{-webkit-animation:countPulse .56s ease-out;animation:countPulse .56s ease-out}
+#launch-sub{position:absolute;top:65%;left:0;right:0;text-align:center;color:#e51d2a;font-size:13px;font-weight:800;letter-spacing:.18em}
+@-webkit-keyframes countPulse{0%{transform:scale(.72);opacity:0}35%{transform:scale(1.08);opacity:1}100%{transform:scale(.95);opacity:.96}}
+@keyframes countPulse{0%{transform:scale(.72);opacity:0}35%{transform:scale(1.08);opacity:1}100%{transform:scale(.95);opacity:.96}}
+#game-container.launch-rumble{-webkit-animation:launchRumble .12s linear 6;animation:launchRumble .12s linear 6}
+@-webkit-keyframes launchRumble{0%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}50%{transform:translate(2px,-1px)}75%{transform:translate(-1px,-2px)}100%{transform:translate(0,0)}}
+@keyframes launchRumble{0%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}50%{transform:translate(2px,-1px)}75%{transform:translate(-1px,-2px)}100%{transform:translate(0,0)}}
+#success-flash{position:absolute;inset:0;z-index:35;pointer-events:none;background:radial-gradient(circle at 50% 28%,rgba(255,255,255,.9),rgba(68,255,136,.34) 28%,rgba(68,255,136,0) 66%);opacity:0}
+#success-flash.active{-webkit-animation:successFlash .9s ease-out;animation:successFlash .9s ease-out}
+@-webkit-keyframes successFlash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+@keyframes successFlash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
 .mission-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0;text-align:left}
 .mission-step{background:#0b0d14;border:1px solid #303540;border-radius:10px;padding:10px}
 .mission-step b{display:block;color:#e51d2a;font-size:10px;letter-spacing:.08em;margin-bottom:4px}
@@ -122,7 +136,7 @@ canvas{display:block;width:800px;height:600px;background:#0b0b15}
       <div class="stat-line" style="display:none">Резерв: <span id="campaign-supplies">3</span></div>
     </div>
     <div id="campaign-modifier"><strong>Штатные условия</strong><br>Система готова к запуску.</div>
-    <button class="action" type="button" onclick="window.mpDockingStart && window.mpDockingStart()">НАЧАТЬ СТЫКОВКУ</button>
+    <button id="launch-button" class="action" type="button" onclick="startLaunchSequence()">НАЧАТЬ СТЫКОВКУ</button>
     <button id="new-campaign-button" type="button" style="display:none">Новая кампания</button>
   </div>
 
@@ -152,6 +166,12 @@ canvas{display:block;width:800px;height:600px;background:#0b0b15}
     </div>
   </div>
 
+  <div id="launch-overlay" aria-hidden="true">
+    <div id="launch-count">3</div>
+    <div id="launch-sub">СИСТЕМЫ ГОТОВЫ</div>
+  </div>
+  <div id="success-flash"></div>
+
   <div id="achievement-notification">
     <div class="achievement-header">Достижение</div>
     <div class="achievement-title" id="achievement-name"></div>
@@ -176,12 +196,66 @@ canvas{display:block;width:800px;height:600px;background:#0b0b15}
     var scaleX=(window.innerWidth-PAD)/GAME_W;
     var scaleY=(window.innerHeight-PAD)/GAME_H;
     var scale=Math.min(scaleX,scaleY,1);
-    el.style.transform='scale('+scale+')';
+    el.setAttribute('data-scale',String(scale));
+    if(!el.className.match(/launch-rumble/)) el.style.transform='scale('+scale+')';
   }
+  window.mpDockingResize=resize;
   window.addEventListener('resize',resize);
   window.addEventListener('orientationchange',function(){setTimeout(resize,120);});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',resize);else resize();
 })();
+
+var mpLaunchRunning=false;
+function startLaunchSequence(){
+  if(mpLaunchRunning)return;
+  mpLaunchRunning=true;
+
+  var campaign=document.getElementById('campaign-start-overlay');
+  var overlay=document.getElementById('launch-overlay');
+  var count=document.getElementById('launch-count');
+  var sub=document.getElementById('launch-sub');
+  var container=document.getElementById('game-container');
+  if(campaign)campaign.style.display='none';
+  if(overlay)overlay.className='active';
+
+  var frames=[
+    {text:'3',sub:'СИСТЕМЫ ГОТОВЫ'},
+    {text:'2',sub:'ТЕЛЕМЕТРИЯ В НОРМЕ'},
+    {text:'1',sub:'ДВИГАТЕЛЬ ГОТОВ'},
+    {text:'ПУСК',sub:'МИССИЯ MP-02'}
+  ];
+  var idx=0;
+
+  function showFrame(){
+    if(!count)return;
+    count.className='';
+    count.innerHTML=frames[idx].text;
+    if(sub)sub.innerHTML=frames[idx].sub;
+    void count.offsetWidth;
+    count.className='pulse';
+    if(window.mpDockingLaunchVibrate)window.mpDockingLaunchVibrate();
+
+    if(idx===frames.length-1 && container){
+      container.className+=' launch-rumble';
+    }
+
+    idx++;
+    if(idx<frames.length){
+      setTimeout(showFrame,620);
+    }else{
+      setTimeout(function(){
+        if(overlay)overlay.className='';
+        if(container){
+          container.className=container.className.replace(/\s*launch-rumble/g,'');
+        }
+        if(window.mpDockingResize)window.mpDockingResize();
+        if(window.mpDockingStart)window.mpDockingStart();
+        mpLaunchRunning=false;
+      },650);
+    }
+  }
+  showFrame();
+}
 </script>
 <script src="game-legacy.js"></script>
 </body>
