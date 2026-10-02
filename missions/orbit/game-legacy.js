@@ -14,7 +14,7 @@ var TARGET_CENTER=(TARGET_MIN+TARGET_MAX)/2;
 var DT=0.018;
 var canvas,ctx,state,trail,stars,running=false,ended=false,last=0,acc=0;
 var hold=0,HOLD_NEEDED=4.2;
-var burnBudget=6,BURN_STEP=0.04;
+var MAX_BURNS=15,burnBudget=MAX_BURNS,BURN_STEP=0.04;
 
 function $(id){return document.getElementById(id)}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
@@ -34,7 +34,6 @@ function deriv(s){
 function addState(s,k,h){
   return {x:s.x+k.x*h,y:s.y+k.y*h,vx:s.vx+k.vx*h,vy:s.vy+k.vy*h};
 }
-// Classical RK4, following the numerical-integration approach used by the MIT upstream simulator.
 function rk4(s,dt){
   var k1=deriv(s);
   var k2=deriv(addState(s,k1,dt/2));
@@ -71,13 +70,24 @@ function createStars(){
   stars=[];
   for(var i=0;i<90;i++)stars.push({x:Math.random()*W,y:Math.random()*PLAY_H,r:Math.random()<.85?1:2,a:.2+Math.random()*.75,p:Math.random()*6.28});
 }
-function resetState(){
+function resetCore(keepRunning){
   state={x:1.0,y:0,vx:0,vy:1.0};
-  trail=[];hold=0;burnBudget=6;running=false;ended=false;last=0;acc=0;
+  trail=[];hold=0;burnBudget=MAX_BURNS;ended=false;last=performance.now();acc=0;
+  running=!!keepRunning;
   $('burns').innerHTML=burnBudget;
   $('holdfill').style.width='0%';$('holdbar').className='';
   $('result-overlay').className='overlay';
+}
+function resetState(){
+  resetCore(false);
   $('start-overlay').className='overlay active';
+}
+function resetManeuver(){
+  resetCore(true);
+  $('start-overlay').className='overlay';
+  var flash=$('burn-flash');
+  if(flash){flash.className='active';setTimeout(function(){flash.className=''},300)}
+  try{if(navigator.vibrate)navigator.vibrate([35,25,35])}catch(e){}
 }
 function burn(sign){
   if(!running||ended||burnBudget<=0)return;
@@ -93,7 +103,26 @@ function burn(sign){
 function bind(){
   $('prograde').onclick=function(){burn(1)};
   $('retrograde').onclick=function(){burn(-1)};
-  if(('ontouchstart' in window)||(navigator.maxTouchPoints>0))$('controls').style.display='flex';
+  var controls=$('controls');
+  var resetButton=document.getElementById('reset-orbit');
+  if(!resetButton&&controls){
+    resetButton=document.createElement('button');
+    resetButton.id='reset-orbit';
+    resetButton.type='button';
+    resetButton.className='burn';
+    resetButton.innerHTML='СБРОС<small>ЗАНОВО</small>';
+    resetButton.style.minWidth='82px';
+    resetButton.style.width='82px';
+    resetButton.style.background='#252a34';
+    resetButton.style.borderColor='#626a78';
+    resetButton.onclick=resetManeuver;
+    controls.appendChild(resetButton);
+    controls.style.width='330px';
+    controls.style.minWidth='330px';
+  }
+  var intro=document.querySelector('#start-overlay .card p');
+  if(intro)intro.innerHTML='Спутник находится на низкой круговой орбите. У тебя <b>15 коротких импульсов</b>. Нужно перевести аппарат в красный орбитальный коридор и стабилизировать траекторию.';
+  if(('ontouchstart' in window)||(navigator.maxTouchPoints>0))controls.style.display='flex';
 }
 function finish(success,reason){
   if(ended)return;
@@ -126,10 +155,6 @@ function update(){
     hold=Math.max(0,hold-DT*1.6);
     $('holdfill').style.width=clamp(hold/HOLD_NEEDED*100,0,100)+'%';
     if(hold<=0)$('holdbar').className='';
-  }
-
-  if(burnBudget===0&&!orbitQuality(el)&&el.apo<TARGET_MIN-0.05){
-    // Let the player see the final trajectory briefly; do not end instantly.
   }
 }
 function toScreen(x,y){return {x:CX+x*SCALE,y:CY+y*SCALE}}
@@ -228,6 +253,7 @@ window.mpOrbitDebug={
   getElements:function(){return elements(state)},
   getBurns:function(){return burnBudget},
   burnPro:function(){burn(1)},
+  reset:function(){resetManeuver()},
   forceSuccess:function(){
     state={x:TARGET_CENTER,y:0,vx:0,vy:Math.sqrt(MU/TARGET_CENTER)};
     hold=HOLD_NEEDED-.15;running=true;ended=false;
