@@ -6,7 +6,7 @@ const profiles=[
 ];
 
 for(const p of profiles){
-  test(p.name+' MP-04 starts and orbital burn works',async({browser})=>{
+  test(p.name+' MP-04 starts, has 15 burns, reset works',async({browser})=>{
     const context=await browser.newContext({
       viewport:p.viewport,
       userAgent:'Mozilla/5.0 (iPad; CPU OS 11_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15F79 Safari/604.1',
@@ -20,21 +20,29 @@ for(const p of profiles){
     await page.goto('/missions/orbit/');
     await expect(page.locator('#start-overlay')).toHaveClass(/active/);
     await expect(page.locator('#brandbar img')).toBeVisible();
+    await expect(page.locator('#start-overlay .card p')).toContainText('15 коротких импульсов');
 
     await page.getByRole('button',{name:'НАЧАТЬ МАНЁВР'}).tap();
     await expect(page.locator('#count-overlay')).toHaveClass(/active/);
     await page.waitForTimeout(2800);
 
     await expect(page.locator('#controls')).toBeVisible();
+    await expect(page.locator('#reset-orbit')).toBeVisible();
     const burnsBefore=await page.evaluate(()=>window.mpOrbitDebug.getBurns());
+    expect(burnsBefore).toBe(15);
+
     const apoBefore=await page.evaluate(()=>window.mpOrbitDebug.getElements().apo);
     await page.locator('#prograde').tap();
     await page.waitForTimeout(120);
     const burnsAfter=await page.evaluate(()=>window.mpOrbitDebug.getBurns());
     const apoAfter=await page.evaluate(()=>window.mpOrbitDebug.getElements().apo);
-
-    expect(burnsAfter).toBe(burnsBefore-1);
+    expect(burnsAfter).toBe(14);
     expect(apoAfter).toBeGreaterThan(apoBefore);
+
+    await page.locator('#reset-orbit').tap();
+    await page.waitForTimeout(120);
+    expect(await page.evaluate(()=>window.mpOrbitDebug.getBurns())).toBe(15);
+    expect(await page.evaluate(()=>window.mpOrbitDebug.getElements().apo)).toBeCloseTo(1,1);
 
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
     expect(overflow).toBeLessThanOrEqual(1);
