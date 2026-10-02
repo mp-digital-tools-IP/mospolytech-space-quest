@@ -20,6 +20,19 @@ canvas{display:block;width:800px;height:600px;background:#0b0b15}
 .hud-title{font-size:10px;color:#e51d2a;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:7px}
 #mission-clock{position:absolute;right:15px;top:70px;background:rgba(6,8,15,.82);border:1px solid #3a3e48;border-radius:9px;padding:8px 11px;font-size:13px;z-index:7;pointer-events:none}
 #mission-clock b{color:#e51d2a;font-size:17px}
+#phase-panel{position:absolute;left:50%;top:68px;transform:translateX(-50%);width:365px;max-width:46%;background:rgba(6,8,15,.86);border:1px solid #343946;border-radius:11px;padding:9px 13px;z-index:8;pointer-events:none;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.18)}
+#phase-name{font-size:11px;font-weight:800;letter-spacing:.11em;color:#e51d2a}
+#phase-hint{font-size:11px;color:#e3e6eb;line-height:1.25;margin-top:3px}
+#phase-progress{position:absolute;right:9px;top:8px;color:#7f8791;font-size:10px;font-weight:700}
+#phase-panel:after{content:"";display:block;height:2px;width:42%;margin:7px auto 0;background:#e51d2a;border-radius:2px}
+.mission-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0;text-align:left}
+.mission-step{background:#0b0d14;border:1px solid #303540;border-radius:10px;padding:10px}
+.mission-step b{display:block;color:#e51d2a;font-size:10px;letter-spacing:.08em;margin-bottom:4px}
+.mission-step span{font-size:11px;color:#d3d7dd;line-height:1.25;display:block}
+.launch-ring{width:120px;height:120px;margin:8px auto 18px;position:relative;border-radius:50%;border:1px solid #333945;display:flex;align-items:center;justify-content:center}
+.launch-ring:before{content:"";position:absolute;width:88px;height:88px;border:4px solid #e51d2a;border-left-color:transparent;border-radius:50%;animation:spin 5s linear infinite}
+.launch-ring:after{content:"MP-02";font-size:20px;font-weight:900;letter-spacing:.04em}
+@keyframes spin{to{transform:rotate(360deg)}}
 .overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,6,12,.92);z-index:20;padding:28px}
 .overlay-card{width:560px;max-width:92%;background:#12141d;border:1px solid #404551;border-radius:18px;padding:28px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.45)}
 .overlay-card h1{margin:0 0 12px;font-size:31px;line-height:1;color:#fff}
@@ -34,6 +47,8 @@ canvas{display:block;width:800px;height:600px;background:#0b0b15}
 #campaign-start-overlay>*,#tutorial-overlay>*,#message-overlay>*,#pause-overlay>*,#trophy-overlay>*{max-width:560px;margin-left:auto;margin-right:auto}
 #campaign-start-overlay h1,#tutorial-overlay h1,#message-overlay h1,#pause-overlay h1{color:#fff;margin-top:65px}
 #campaign-start-overlay h1,#message-overlay h1{font-size:30px}
+#campaign-start-overlay .action{box-shadow:0 10px 28px rgba(229,29,42,.22)}
+#message-overlay p{max-width:430px!important;line-height:1.5;color:#d5d9df}
 #campaign-start-overlay:before,#tutorial-overlay:before,#message-overlay:before{content:"МОСКОВСКИЙ ПОЛИТЕХ · КОСМИЧЕСКАЯ МИССИЯ";display:block;color:#e51d2a;font-size:11px;font-weight:800;letter-spacing:.13em;margin-top:20px}
 #tutorial-overlay{text-align:left}
 #tutorial-overlay h1{text-align:center}
@@ -78,7 +93,12 @@ canvas{display:block;width:800px;height:600px;background:#0b0b15}
     </div>
   </div>
 
-  <div id="mission-clock">Время: <b id="mission-time">120</b> с</div>
+  <div id="phase-panel">
+    <div id="phase-progress">0 / 3</div>
+    <div id="phase-name">ПОДГОТОВКА</div>
+    <div id="phase-hint">Запусти миссию</div>
+  </div>
+  <div id="mission-clock">Время: <b id="mission-time">90</b> с</div>
 
   <div id="message-overlay">
     <h1 id="msg-title">Статус миссии</h1>
@@ -88,8 +108,14 @@ canvas{display:block;width:800px;height:600px;background:#0b0b15}
   </div>
 
   <div id="campaign-start-overlay">
+    <div class="launch-ring"></div>
     <h1 id="campaign-day-number">МИССИЯ MP-02</h1>
-    <p><b>Орбитальная стыковка.</b> Подними аппарат с поверхности, выйди к орбитальному модулю и состыкуйся на безопасной относительной скорости.</p>
+    <p><b>Орбитальная стыковка.</b> За 90 секунд проведи аппарат Московского Политеха от поверхности до мягкой стыковки с орбитальным модулем.</p>
+    <div class="mission-steps">
+      <div class="mission-step"><b>01 · ВЗЛЁТ</b><span>Набери высоту и выйди к орбитальному коридору.</span></div>
+      <div class="mission-step"><b>02 · ΔV</b><span>Синхронизируй скорость с движущимся модулем.</span></div>
+      <div class="mission-step"><b>03 · СТЫКОВКА</b><span>Подойди снизу и сведи обе относительные скорости в зелёную зону.</span></div>
+    </div>
     <div style="max-width:390px;margin:16px auto;text-align:left;line-height:1.6">
       <div class="stat-line">Состояние аппарата: <span id="campaign-condition">100%</span></div>
       <div class="stat-line">Запас топлива: <span id="campaign-fuel-budget">100%</span></div>
@@ -138,7 +164,7 @@ canvas{display:block;width:800px;height:600px;background:#0b0b15}
     <div id="trophy-stats"></div>
   </div>
 
-  <div id="start-touch-note">Миссия рассчитана на сенсорное управление · 120 секунд</div>
+  <div id="start-touch-note">Сенсорное управление · миссия до 90 секунд · короткие импульсы дают больше точности</div>
 </div>
 
 <script>
