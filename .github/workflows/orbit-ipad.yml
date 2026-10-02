@@ -2,7 +2,7 @@ name: MP-04 orbit iPad compatibility
 
 on:
   push:
-    branches: ["feature/mission-orbit"]
+    branches: ["feature/mission-orbit", "fix/orbit-burns-reset"]
     paths:
       - "missions/orbit/**"
       - "tests/orbit-ipad.spec.js"
