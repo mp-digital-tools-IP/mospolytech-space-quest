@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ffffff">
+<title>Московский Политех — Космическая миссия</title>
+<style>
+:root{--red:#e30613;--black:#111;--gray:#f2f2f2;--green:#178b4b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#fff;color:#111}
+body{overflow-x:hidden}
+button{font:inherit;-webkit-appearance:none;appearance:none}
+.screen{display:none;min-height:100vh;padding:18px 22px;overflow-y:auto}
+.screen.active{display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.02em}
+.mark{width:44px;height:44px;background:var(--red);position:relative;flex:none}
+.mark:before{content:"";position:absolute;background:#fff;width:14px;height:44px;left:15px;top:0}
+.mark:after{content:"";position:absolute;background:var(--red);width:8px;height:22px;left:18px;top:11px}
+.brandtxt{line-height:.95;font-size:19px}
+.hero{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:820px;margin:auto;width:100%;padding:24px 0}
+.kicker{color:var(--red);font-weight:800;text-transform:uppercase;letter-spacing:.12em;font-size:14px}
+h1{font-size:54px;line-height:.98;margin:14px 0 18px;letter-spacing:-.04em}
+.lead{font-size:23px;line-height:1.35;max-width:680px;margin:0 0 28px}
+.primary{border:0;border-radius:18px;background:var(--red);color:white;padding:19px 28px;font-weight:800;font-size:21px;min-height:62px;box-shadow:0 8px 22px rgba(227,6,19,.18)}
+.secondary{border:2px solid #111;border-radius:16px;background:#fff;color:#111;padding:14px 22px;font-weight:750}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:15px}
+.progress{font-weight:800;font-size:17px}.timer{font-variant-numeric:tabular-nums;background:#111;color:#fff;border-radius:999px;padding:9px 14px;font-weight:800}
+.gamewrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:14px 0}
+.game{width:100%;max-width:980px;display:flex;gap:24px;align-items:center}
+.game>.card{flex:1.05}.game>.sat{flex:.95}
+.card{background:var(--gray);border-radius:26px;padding:22px}
+.mission h2{font-size:34px;margin:0 0 10px;line-height:1.05}
+.mission p{font-size:18px;line-height:1.4;margin:0}
+.sat{position:relative;height:350px;background:#f4f4f4;border:2px solid #e5e5e5;border-radius:28px;overflow:hidden}
+.body{position:absolute;width:150px;height:150px;left:50%;top:50%;transform:translate(-50%,-50%);border:5px solid #111;border-radius:24px;background:white;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;text-align:center}
+.slot{position:absolute;border:3px dashed #999;border-radius:18px;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;color:#777;padding:8px}
+.slot.ok{border-style:solid;border-color:var(--green);color:var(--green);background:#eaf7f0}
+#slot-energy{width:135px;height:90px;left:18px;top:130px}
+#slot-link{width:120px;height:90px;right:22px;top:25px}
+#slot-camera{width:120px;height:90px;right:22px;bottom:25px}
+.modules{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+.module{width:calc(50% - 6px);border:2px solid #111;background:#fff;border-radius:18px;min-height:86px;padding:12px;font-weight:850;font-size:16px;display:flex;align-items:center;justify-content:center;text-align:center;touch-action:manipulation}
+.module.selected{outline:5px solid rgba(227,6,19,.18);border-color:var(--red)}
+.module.used{opacity:.25;pointer-events:none}
+.module.wrong{animation:wiggle .28s ease}
+@keyframes wiggle{0%{transform:translateX(0)}33%{transform:translateX(-8px)}66%{transform:translateX(8px)}100%{transform:translateX(0)}}
+.hint{font-size:14px;color:#666;margin-top:12px}
+.result{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px 0}
+.resultbox{max-width:760px}
+.badge{width:112px;height:112px;border-radius:50%;margin:0 auto 22px;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:54px;font-weight:900}
+.result h2{font-size:52px;line-height:1;margin:0 0 15px}
+.result p{font-size:21px;line-height:1.4}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:25px}
+@media(max-width:760px){
+ .screen{padding:14px}
+ .game{display:block}
+ .card{padding:16px;margin-bottom:12px}
+ .mission h2{font-size:28px}.mission p{font-size:16px}
+ .sat{height:310px}
+ .body{width:125px;height:125px;font-size:17px}
+ #slot-energy{width:112px;height:76px;left:8px;top:118px}
+ #slot-link{width:105px;height:76px;right:8px;top:22px}
+ #slot-camera{width:105px;height:76px;right:8px;bottom:22px}
+ .module{width:calc(33.333% - 8px);min-height:70px;font-size:14px;padding:8px}
+ .hint{display:none}
+ h1{font-size:42px}.lead{font-size:19px}
+}
+@media(max-width:420px){
+ .topbar{gap:7px}.brandtxt{font-size:12px!important}.progress{font-size:14px}.timer{font-size:14px;padding:8px 10px}
+ .mission h2{font-size:24px}
+ .module{font-size:12px;min-height:66px}
+ .sat{height:295px}
+ h1{font-size:36px}
+}
+@media(max-height:650px) and (min-width:761px){
+ .sat{height:260px}.module{min-height:60px}.card{padding:14px}
+}
+</style>
+</head>
+<body>
+<section id="start" class="screen active">
+  <div class="brand"><div class="mark"></div><div class="brandtxt">МОСКОВСКИЙ<br>ПОЛИТЕХ</div></div>
+  <div class="hero">
+    <div class="kicker">Космический квест · 01</div>
+    <h1>Собери спутник<br>для миссии</h1>
+    <p class="lead">Ты — инженер миссии. Установи на аппарат три нужных модуля. На решение — 60 секунд.</p>
+    <button class="primary" onclick="startGame()">НАЧАТЬ МИССИЮ</button>
+  </div>
+</section>
+
+<section id="play" class="screen">
+ <div class="topbar">
+   <div class="brand"><div class="mark" style="width:34px;height:34px"></div><div class="brandtxt" style="font-size:15px">МОСКОВСКИЙ<br>ПОЛИТЕХ</div></div>
+   <div class="progress">Установлено: <span id="count">0</span>/3</div>
+   <div class="timer" id="timer">01:00</div>
+ </div>
+ <div class="gamewrap">
+  <div class="game">
+   <div class="card mission">
+    <div class="kicker">Задача</div>
+    <h2>Спутник наблюдения Земли</h2>
+    <p>Аппарат должен <b>получать энергию</b>, <b>передавать данные</b> на Землю и <b>снимать поверхность</b>. Выбери нужные модули и укажи, куда их установить.</p>
+    <div class="modules" id="modules">
+      <button class="module" data-kind="energy">☀️<br>Солнечная панель</button>
+      <button class="module" data-kind="link">📡<br>Антенна связи</button>
+      <button class="module" data-kind="camera">📷<br>Камера</button>
+      <button class="module" data-kind="wrong">🔊<br>Динамик</button>
+      <button class="module" data-kind="wrong">💡<br>Фара</button>
+      <button class="module" data-kind="wrong">🛞<br>Колесо</button>
+    </div>
+    <div class="hint">Сначала коснись модуля, затем подходящего места на аппарате.</div>
+   </div>
+   <div class="sat">
+     <div class="body">СПУТНИК<br>МП</div>
+     <button class="slot" id="slot-energy" data-accept="energy">ЭНЕРГИЯ</button>
+     <button class="slot" id="slot-link" data-accept="link">СВЯЗЬ</button>
+     <button class="slot" id="slot-camera" data-accept="camera">НАБЛЮДЕНИЕ</button>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section id="success" class="screen">
+ <div class="brand"><div class="mark"></div><div class="brandtxt">МОСКОВСКИЙ<br>ПОЛИТЕХ</div></div>
+ <div class="result"><div class="resultbox">
+   <div class="badge">✓</div>
+   <div class="kicker">Миссия выполнена</div>
+   <h2>Спутник готов<br>к запуску</h2>
+   <p>Энергия, связь и наблюдение работают. Покажи этот экран представителю стенда и получи печать.</p>
+   <div class="actions"><button class="primary" onclick="resetGame()">СЛЕДУЮЩИЙ УЧАСТНИК</button></div>
+ </div></div>
+</section>
+
+<section id="fail" class="screen">
+ <div class="brand"><div class="mark"></div><div class="brandtxt">МОСКОВСКИЙ<br>ПОЛИТЕХ</div></div>
+ <div class="result"><div class="resultbox">
+   <div class="badge" style="background:#111">!</div>
+   <div class="kicker">Время вышло</div>
+   <h2>Миссия требует<br>перезапуска</h2>
+   <p>Попробуй ещё раз: спутнику нужны энергия, связь и система наблюдения.</p>
+   <div class="actions"><button class="primary" onclick="startGame()">ПОВТОРИТЬ</button><button class="secondary" onclick="resetGame()">НА ГЛАВНУЮ</button></div>
+ </div></div>
+</section>
+
+<script>
+var selected=null, placed={}, remaining=60, tick=null;
+function each(selector,fn){var list=document.querySelectorAll(selector);for(var i=0;i<list.length;i++){fn(list[i],i)}}
+function show(id){each('.screen',function(s){s.classList.remove('active')});document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
+function startGame(){
+ selected=null;placed={};remaining=60;
+ each('.module',function(m){m.classList.remove('selected');m.classList.remove('used');m.classList.remove('wrong')});
+ each('.slot',function(s){s.classList.remove('ok');var a=s.getAttribute('data-accept');s.innerHTML=a==='energy'?'ЭНЕРГИЯ':a==='link'?'СВЯЗЬ':'НАБЛЮДЕНИЕ'});
+ document.getElementById('count').innerHTML='0'; updateTimer(); show('play');
+ clearInterval(tick); tick=setInterval(function(){remaining--;updateTimer();if(remaining<=0){clearInterval(tick);show('fail')}},1000);
+}
+function updateTimer(){var s=remaining<10?'0'+remaining:remaining;document.getElementById('timer').innerHTML='00:'+s}
+each('.module',function(m){
+ m.onclick=function(){
+  if(m.classList.contains('used'))return;
+  each('.module',function(x){x.classList.remove('selected')});
+  selected=m;m.classList.add('selected');
+ };
+});
+each('.slot',function(s){
+ s.onclick=function(){
+  if(!selected || s.classList.contains('ok'))return;
+  var kind=selected.getAttribute('data-kind');
+  if(kind===s.getAttribute('data-accept')){
+    s.classList.add('ok');s.innerHTML=selected.innerHTML;selected.classList.add('used');selected.classList.remove('selected');placed[kind]=true;selected=null;
+    var n=0;for(var k in placed){if(placed.hasOwnProperty(k))n++}
+    document.getElementById('count').innerHTML=n;
+    if(n===3){clearInterval(tick);setTimeout(function(){show('success')},450)}
+  }else{
+    var bad=selected;bad.classList.remove('wrong');void bad.offsetWidth;bad.classList.add('wrong');
+  }
+ };
+});
+function resetGame(){clearInterval(tick);show('start')}
+</script>
+</body>
+</html>
