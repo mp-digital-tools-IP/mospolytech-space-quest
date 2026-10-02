@@ -72,7 +72,7 @@ test('iPhone — хаб 2x2 без вертикального скролла', a
   await context.close();
 });
 
-test('режим пройти все последовательно проводит через 4 миссии и показывает финал', async ({ browser }) => {
+test('режим пройти все проводит через 4 миссии, выдаёт экран для штампа и сбрасывается для следующего участника', async ({ browser }) => {
   const context = await browser.newContext({
     viewport: { width: 1024, height: 768 },
     userAgent: profiles[1].userAgent,
@@ -106,6 +106,7 @@ test('режим пройти все последовательно провод
   await page.waitForTimeout(500);
   await winDocking();
   await expect(page.locator('#transition')).toHaveClass(/active/, { timeout: 2000 });
+  await expect(page.locator('#auto-note')).toContainText('Следующая миссия через');
   await page.locator('#next-btn').tap();
   await expect(page).toHaveURL(/campaign\.html\?step=1/);
   await page.waitForTimeout(500);
@@ -124,11 +125,31 @@ test('режим пройти все последовательно провод
 
   await winResultMission('debris', 'Орбитальный сектор очищен');
   await expect(page.locator('#transition')).toHaveClass(/active/, { timeout: 2000 });
+  await expect(page.locator('#auto-note')).toContainText('Финальный экран через');
   await page.locator('#next-btn').tap();
   await expect(page).toHaveURL(/\?complete=1$/);
   await expect(page.locator('#final')).toHaveClass(/active/);
   await expect(page.locator('.result')).toHaveCount(4);
   await expect(page.getByText('Все четыре миссии выполнены')).toBeVisible();
+  await expect(page.locator('.stamp')).toContainText('поставит штамп в маршрутный лист');
+  await expect(page.locator('#next-player')).toBeVisible();
+
+  const finalDims = await page.evaluate(() => ({
+    sh: document.documentElement.scrollHeight,
+    ih: window.innerHeight,
+    sw: document.documentElement.scrollWidth,
+    iw: window.innerWidth
+  }));
+  expect(finalDims.sh).toBeLessThanOrEqual(finalDims.ih + 1);
+  expect(finalDims.sw).toBeLessThanOrEqual(finalDims.iw + 1);
+
+  const storedBeforeReset = await page.evaluate(() => JSON.parse(sessionStorage.getItem('mp_space_campaign')));
+  expect(Object.keys(storedBeforeReset.results)).toHaveLength(4);
+  await page.locator('#next-player').tap();
+  await expect(page).toHaveURL(/campaign\.html\?step=0$/);
+  await expect(page.locator('#mission-label')).toHaveText('МИССИЯ 1 ИЗ 4');
+  const storedAfterReset = await page.evaluate(() => JSON.parse(sessionStorage.getItem('mp_space_campaign')));
+  expect(Object.keys(storedAfterReset.results)).toHaveLength(0);
 
   await context.close();
 });
