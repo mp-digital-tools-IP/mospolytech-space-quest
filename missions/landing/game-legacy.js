@@ -106,15 +106,23 @@ function terrainHeightAt(x){
   }
   return WORLD_BOTTOM;
 }
+function directionVectors(theta){
+  var ca=Math.cos(theta),sa=Math.sin(theta);
+  return {
+    thrust:{x:sa,y:-ca},
+    exhaust:{x:-sa,y:ca}
+  };
+}
 function spawnExhaust(){
-  var ca=Math.cos(lander.theta),sa=Math.sin(lander.theta);
-  var bx=lander.x+sa*15,by=lander.y+ca*15;
+  var d=directionVectors(lander.theta).exhaust;
+  var bx=lander.x+d.x*15,by=lander.y+d.y*15;
   for(var i=0;i<3;i++){
+    var speed=30+Math.random()*22;
     particles.push({
       x:bx+(Math.random()-.5)*5,
       y:by+(Math.random()-.5)*3,
-      vx:sa*18+(Math.random()-.5)*12,
-      vy:ca*30+Math.random()*22,
+      vx:d.x*speed+(Math.random()-.5)*8,
+      vy:d.y*speed+(Math.random()-.5)*8,
       life:16+Math.random()*15
     });
   }
@@ -159,8 +167,9 @@ function update(dt){
   var thrust=thrusting?1:0;
   if(thrusting){lander.fuel=Math.max(0,lander.fuel-1);spawnExhaust()}
 
-  var ax=thrust*CONFIG.thrust*Math.sin(lander.theta);
-  var ay=CONFIG.gravity-thrust*CONFIG.thrust*Math.cos(lander.theta);
+  var thrustDir=directionVectors(lander.theta).thrust;
+  var ax=thrust*CONFIG.thrust*thrustDir.x;
+  var ay=CONFIG.gravity+thrust*CONFIG.thrust*thrustDir.y;
   lander.vx=clamp(lander.vx+ax*dt,-CONFIG.vmax,CONFIG.vmax);
   lander.vy=clamp(lander.vy+ay*dt,-CONFIG.vmax,CONFIG.vmax);
   lander.x+=lander.vx*dt;
@@ -311,6 +320,7 @@ window.mpLandingDebug={
   getLander:function(){return lander},
   getLandingRange:function(){return landingRange.slice()},
   getLimits:function(){return {vertical:CONFIG.landingVerticalSpeed,horizontal:CONFIG.landingHorizontalSpeed,angle:CONFIG.landingAngle}},
+  getDirectionVectors:function(angleDeg){return directionVectors(angleDeg*Math.PI/180)},
   forceSuccess:function(){
     var x=(landingRange[0]+landingRange[1])/2;
     lander.x=x;lander.y=terrainHeightAt(x)-17;lander.vx=0;lander.vy=1;lander.theta=0;running=true;gameEnded=false;
