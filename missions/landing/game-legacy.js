@@ -21,7 +21,8 @@ var CONFIG={
   rotate:5,
   fuel:1500,
   vmax:120,
-  landingSpeed:25,
+  landingVerticalSpeed:30,
+  landingHorizontalSpeed:25,
   landingAngle:16
 };
 
@@ -141,12 +142,13 @@ function finish(success,reason){
   try{
     if(navigator.vibrate)navigator.vibrate(success?[40,30,80]:[120,40,120]);
   }catch(e){}
-  var speed=Math.sqrt(lander.vx*lander.vx+lander.vy*lander.vy);
+  var verticalSpeed=Math.abs(lander.vy);
+  var horizontalSpeed=Math.abs(lander.vx);
   var angle=Math.abs(normAngle(lander.theta));
   $('result-kicker').innerHTML=success?'МИССИЯ ВЫПОЛНЕНА':'МИССИЯ НЕ ВЫПОЛНЕНА';
   $('result-title').innerHTML=success?'Мягкая посадка выполнена':'Посадка сорвана';
   $('result-title').style.color=success?'#44ff88':'#ff626c';
-  var msg=reason+'<br><br>Скорость: <b>'+speed.toFixed(1)+' м/с</b> · Угол: <b>'+angle.toFixed(1)+'°</b> · Топливо: <b>'+Math.max(0,Math.round(lander.fuel/CONFIG.fuel*100))+'%</b>';
+  var msg=reason+'<br><br>V↓: <b>'+verticalSpeed.toFixed(1)+' м/с</b> · V→: <b>'+horizontalSpeed.toFixed(1)+' м/с</b> · Угол: <b>'+angle.toFixed(1)+'°</b> · Топливо: <b>'+Math.max(0,Math.round(lander.fuel/CONFIG.fuel*100))+'%</b>';
   $('result-text').innerHTML=msg;
   setTimeout(function(){$('result-overlay').className='overlay active'},success?650:350);
 }
@@ -176,15 +178,17 @@ function update(dt){
   var ground=terrainHeightAt(lander.x);
   var bottom=lander.y+16;
   if(bottom>=ground){
-    var speed=Math.sqrt(lander.vx*lander.vx+lander.vy*lander.vy);
+    var verticalSpeed=Math.max(0,lander.vy);
+    var horizontalSpeed=Math.abs(lander.vx);
     var angle=Math.abs(normAngle(lander.theta));
     var inZone=lander.x>=landingRange[0]&&lander.x<=landingRange[1];
-    if(inZone&&speed<=CONFIG.landingSpeed&&angle<=CONFIG.landingAngle&&lander.vy>=0){
+    if(inZone&&verticalSpeed<=CONFIG.landingVerticalSpeed&&horizontalSpeed<=CONFIG.landingHorizontalSpeed&&angle<=CONFIG.landingAngle&&lander.vy>=0){
       lander.y=ground-16;
       finish(true,'Ты посадил модуль точно в отмеченной зоне.');
     }else{
       var why=!inZone?'Касание произошло вне посадочной площадки.':
-              speed>CONFIG.landingSpeed?'Скорость касания была слишком высокой.':
+              verticalSpeed>CONFIG.landingVerticalSpeed?'Вертикальная скорость была слишком высокой. Нужно не более '+CONFIG.landingVerticalSpeed+' м/с.':
+              horizontalSpeed>CONFIG.landingHorizontalSpeed?'Слишком большой боковой снос. Нужно не более '+CONFIG.landingHorizontalSpeed+' м/с.':
               'Аппарат коснулся поверхности с большим наклоном.';
       finish(false,why);
     }
@@ -247,15 +251,18 @@ function render(){
 
   if(!lander)return;
   var speed=Math.sqrt(lander.vx*lander.vx+lander.vy*lander.vy);
+  var verticalSpeed=Math.abs(lander.vy);
+  var horizontalSpeed=Math.abs(lander.vx);
   var angle=Math.abs(normAngle(lander.theta));
   var alt=Math.max(0,terrainHeightAt(lander.x)-(lander.y+16));
   $('altitude').innerHTML=Math.round(alt);
   $('velocity').innerHTML=speed.toFixed(1);
-  $('vvelocity').innerHTML=Math.abs(lander.vy).toFixed(1);
+  $('vvelocity').innerHTML=verticalSpeed.toFixed(1);
   $('angle').innerHTML=angle.toFixed(0);
   $('fuel').innerHTML=Math.max(0,Math.round(lander.fuel/CONFIG.fuel*100));
+  $('vvelocity').style.color=verticalSpeed<=CONFIG.landingVerticalSpeed?'#44ff88':'#ffbe55';
 
-  var warn=speed>CONFIG.landingSpeed*1.35&&alt<120;
+  var warn=verticalSpeed>CONFIG.landingVerticalSpeed&&alt<120;
   $('warning').className=warn?'show':'';
 
   if(alt>180){
@@ -263,10 +270,10 @@ function render(){
     $('mission-hint').innerHTML='Найди красную площадку и начни смещаться к ней. Не трать топливо непрерывно.';
   }else if(alt>65){
     $('mission-title').innerHTML='ЭТАП 2 · ТОРМОЖЕНИЕ';
-    $('mission-hint').innerHTML=speed>35?'Скорость высокая — дай импульс тяги и выровняй траекторию.':'Скорость под контролем. Держи аппарат над площадкой.';
+    $('mission-hint').innerHTML=verticalSpeed>CONFIG.landingVerticalSpeed?'Гаси вертикальную скорость до '+CONFIG.landingVerticalSpeed+' м/с или ниже.':'Вертикальная скорость уже в допустимом диапазоне. Держи аппарат над площадкой.';
   }else{
     $('mission-title').innerHTML='ЭТАП 3 · КАСАНИЕ';
-    $('mission-hint').innerHTML=(speed<=CONFIG.landingSpeed&&angle<=CONFIG.landingAngle)?'ЗЕЛЁНЫЙ РЕЖИМ: удерживай ориентацию до касания.':'Снизь скорость и выровняй аппарат почти вертикально.';
+    $('mission-hint').innerHTML=(verticalSpeed<=CONFIG.landingVerticalSpeed&&horizontalSpeed<=CONFIG.landingHorizontalSpeed&&angle<=CONFIG.landingAngle)?'ЗЕЛЁНЫЙ РЕЖИМ: V↓ ≤ '+CONFIG.landingVerticalSpeed+' м/с. Удерживай ориентацию до касания.':'Для посадки: V↓ ≤ '+CONFIG.landingVerticalSpeed+' м/с, боковой снос ≤ '+CONFIG.landingHorizontalSpeed+' м/с, угол ≤ '+CONFIG.landingAngle+'°.';
   }
 }
 function frame(ts){
@@ -303,9 +310,14 @@ window.resetMission=function(){newMission()};
 window.mpLandingDebug={
   getLander:function(){return lander},
   getLandingRange:function(){return landingRange.slice()},
+  getLimits:function(){return {vertical:CONFIG.landingVerticalSpeed,horizontal:CONFIG.landingHorizontalSpeed,angle:CONFIG.landingAngle}},
   forceSuccess:function(){
     var x=(landingRange[0]+landingRange[1])/2;
     lander.x=x;lander.y=terrainHeightAt(x)-17;lander.vx=0;lander.vy=1;lander.theta=0;running=true;gameEnded=false;
+  },
+  forceLanding:function(vx,vy,angleDeg){
+    var x=(landingRange[0]+landingRange[1])/2;
+    lander.x=x;lander.y=terrainHeightAt(x)-17;lander.vx=vx;lander.vy=vy;lander.theta=angleDeg*Math.PI/180;running=true;gameEnded=false;
   }
 };
 
