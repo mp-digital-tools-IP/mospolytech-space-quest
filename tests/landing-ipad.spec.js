@@ -47,6 +47,24 @@ for(const p of profiles){
   });
 }
 
+test('MP-03 thrust and exhaust vectors are opposite at a tilt',async({browser})=>{
+  const context=await browser.newContext({
+    viewport:{width:1024,height:768},
+    userAgent:'Mozilla/5.0 (iPad; CPU OS 11_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15F79 Safari/604.1',
+    hasTouch:true,isMobile:true
+  });
+  const page=await context.newPage();
+  await page.goto('/missions/landing/');
+  const vectors=await page.evaluate(()=>window.mpLandingDebug.getDirectionVectors(25));
+  expect(vectors.thrust.x).toBeGreaterThan(0);
+  expect(vectors.exhaust.x).toBeLessThan(0);
+  expect(vectors.thrust.y).toBeLessThan(0);
+  expect(vectors.exhaust.y).toBeGreaterThan(0);
+  expect(vectors.thrust.x+vectors.exhaust.x).toBeCloseTo(0,8);
+  expect(vectors.thrust.y+vectors.exhaust.y).toBeCloseTo(0,8);
+  await context.close();
+});
+
 test('MP-03 successful landing produces result screen',async({browser})=>{
   const context=await browser.newContext({
     viewport:{width:1024,height:768},
