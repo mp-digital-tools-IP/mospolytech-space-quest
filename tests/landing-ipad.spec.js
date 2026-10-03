@@ -20,6 +20,7 @@ for(const p of profiles){
     await page.goto('/missions/landing/');
     await expect(page.locator('#start-overlay')).toHaveClass(/active/);
     await expect(page.locator('#brandbar img')).toBeVisible();
+    await expect(page.locator('#start-overlay')).toContainText('V↓ ≤ 30 м/с');
 
     await page.getByRole('button',{name:'НАЧАТЬ ПОСАДКУ'}).tap();
     await expect(page.locator('#count-overlay')).toHaveClass(/active/);
@@ -60,6 +61,28 @@ test('MP-03 successful landing produces result screen',async({browser})=>{
   await page.waitForTimeout(900);
   await expect(page.locator('#result-overlay')).toHaveClass(/active/);
   await expect(page.locator('#result-title')).toContainText('Мягкая посадка выполнена');
+  await context.close();
+});
+
+test('MP-03 accepts a gentle vertical descent even when total speed exceeds old limit',async({browser})=>{
+  const context=await browser.newContext({
+    viewport:{width:1024,height:768},
+    userAgent:'Mozilla/5.0 (iPad; CPU OS 11_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15F79 Safari/604.1',
+    hasTouch:true,isMobile:true
+  });
+  const page=await context.newPage();
+  await page.goto('/missions/landing/');
+  await page.getByRole('button',{name:'НАЧАТЬ ПОСАДКУ'}).tap();
+  await page.waitForTimeout(2850);
+  const limits=await page.evaluate(()=>window.mpLandingDebug.getLimits());
+  expect(limits).toEqual({vertical:30,horizontal:25,angle:16});
+
+  // Total speed is about 34.4 m/s, which used to fail the old 25 m/s total-speed rule.
+  await page.evaluate(()=>window.mpLandingDebug.forceLanding(20,28,0));
+  await page.waitForTimeout(900);
+  await expect(page.locator('#result-overlay')).toHaveClass(/active/);
+  await expect(page.locator('#result-title')).toContainText('Мягкая посадка выполнена');
+  await expect(page.locator('#result-text')).toContainText('V↓: 28.');
   await context.close();
 });
 
