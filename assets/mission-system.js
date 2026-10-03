@@ -1,10 +1,10 @@
 (function(){
 'use strict';
 var meta={
-  docking:{series:'01 / 04',code:'MP-02',name:'ОРБИТАЛЬНАЯ СТЫКОВКА'},
-  landing:{series:'02 / 04',code:'MP-03',name:'МЯГКАЯ ПОСАДКА'},
-  orbit:{series:'03 / 04',code:'MP-04',name:'ВЫВОД НА ОРБИТУ'},
-  debris:{series:'04 / 04',code:'MP-05',name:'ОЧИСТКА ОРБИТЫ'}
+  docking:{series:'01 / 04',code:'MP-02',name:'ОРБИТАЛЬНАЯ СТЫКОВКА',success:'СТЫКОВКА ВЫПОЛНЕНА',next:'../landing/',nextLabel:'СЛЕДУЮЩАЯ ИГРА →'},
+  landing:{series:'02 / 04',code:'MP-03',name:'МЯГКАЯ ПОСАДКА',success:'Мягкая посадка выполнена',next:'../orbit/',nextLabel:'СЛЕДУЮЩАЯ ИГРА →'},
+  orbit:{series:'03 / 04',code:'MP-04',name:'ВЫВОД НА ОРБИТУ',success:'Орбита стабилизирована',next:'../debris/',nextLabel:'СЛЕДУЮЩАЯ ИГРА →'},
+  debris:{series:'04 / 04',code:'MP-05',name:'ОЧИСТКА ОРБИТЫ',success:'Орбитальный сектор очищен',next:'../../?complete=1',nextLabel:'ЗАВЕРШИТЬ КВЕСТ'}
 };
 function detect(){
   var p=location.pathname;
@@ -47,11 +47,44 @@ function decorateResults(){
     title.parentNode.insertBefore(stamp,title);
   }
 }
+function visible(el){
+  if(!el)return false;
+  var cs=window.getComputedStyle?window.getComputedStyle(el):el.currentStyle;
+  return !!cs&&cs.display!=='none'&&cs.visibility!=='hidden'&&parseFloat(cs.opacity||'1')>0;
+}
+function wireNextGame(m,inCampaign){
+  if(inCampaign)return;
+  var overlay=document.getElementById('message-overlay')||document.getElementById('result-overlay');
+  if(!overlay)return;
+  var button=overlay.querySelector('.action');
+  var title=overlay.querySelector('h1');
+  if(!button||!title)return;
+  var retryClick=button.onclick;
+  var retryText=button.innerHTML;
+  var successText=(m.success||'').toLowerCase();
+  function refresh(){
+    if(!visible(overlay))return;
+    var current=(title.textContent||title.innerText||'').toLowerCase();
+    var success=successText&&current.indexOf(successText)!==-1;
+    if(success){
+      if(button.getAttribute('data-mp-next')==='1')return;
+      button.setAttribute('data-mp-next','1');
+      button.innerHTML=m.nextLabel;
+      button.onclick=function(){location.href=m.next;return false};
+    }else if(button.getAttribute('data-mp-next')==='1'){
+      button.removeAttribute('data-mp-next');
+      button.innerHTML=retryText;
+      button.onclick=retryClick;
+    }
+  }
+  refresh();
+  window.setInterval(refresh,220);
+}
 function init(){
   var id=detect(),m=meta[id];if(!m)return;
   var inCampaign=false;try{inCampaign=window.self!==window.top}catch(e){inCampaign=true}
   if(inCampaign)document.documentElement.className+=' mp-in-campaign';
-  var container=document.getElementById('game-container');insertTop(container,m);decorateStart(m);decorateResults();
+  var container=document.getElementById('game-container');insertTop(container,m);decorateStart(m);decorateResults();wireNextGame(m,inCampaign);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
