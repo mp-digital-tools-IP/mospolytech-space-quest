@@ -6,7 +6,7 @@ const profiles=[
 ];
 
 for(const p of profiles){
-  test(p.name+' MP-04 starts, has 15 burns, reset works',async({browser})=>{
+  test(p.name+' MP-04 starts, has 15 burns, angle control and reset work',async({browser})=>{
     const context=await browser.newContext({
       viewport:p.viewport,
       userAgent:'Mozilla/5.0 (iPad; CPU OS 11_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15F79 Safari/604.1',
@@ -21,6 +21,7 @@ for(const p of profiles){
     await expect(page.locator('#start-overlay')).toHaveClass(/active/);
     await expect(page.locator('#brandbar img')).toBeVisible();
     await expect(page.locator('#start-overlay .card p')).toContainText('15 коротких импульсов');
+    await expect(page.locator('#start-overlay .card p')).toContainText('угол импульса');
 
     await page.getByRole('button',{name:'НАЧАТЬ МАНЁВР'}).tap();
     await expect(page.locator('#count-overlay')).toHaveClass(/active/);
@@ -28,10 +29,21 @@ for(const p of profiles){
 
     await expect(page.locator('#controls')).toBeVisible();
     await expect(page.locator('#reset-orbit')).toBeVisible();
+    await expect(page.locator('#angle-left')).toBeVisible();
+    await expect(page.locator('#angle-right')).toBeVisible();
     const burnsBefore=await page.evaluate(()=>window.mpOrbitDebug.getBurns());
     expect(burnsBefore).toBe(15);
+    expect(await page.evaluate(()=>window.mpOrbitDebug.getBurnAngle())).toBe(0);
+
+    await page.locator('#angle-right').tap();
+    await expect(page.locator('#burn-angle')).toContainText('+5°');
+    expect(await page.evaluate(()=>window.mpOrbitDebug.getBurnAngle())).toBe(5);
+    const angledDirection=await page.evaluate(()=>window.mpOrbitDebug.getBurnDirection());
+    expect(Math.abs(angledDirection.x)).toBeGreaterThan(0.01);
 
     const apoBefore=await page.evaluate(()=>window.mpOrbitDebug.getElements().apo);
+    await page.locator('#angle-left').tap();
+    expect(await page.evaluate(()=>window.mpOrbitDebug.getBurnAngle())).toBe(0);
     await page.locator('#prograde').tap();
     await page.waitForTimeout(120);
     const burnsAfter=await page.evaluate(()=>window.mpOrbitDebug.getBurns());
@@ -42,6 +54,7 @@ for(const p of profiles){
     await page.locator('#reset-orbit').tap();
     await page.waitForTimeout(120);
     expect(await page.evaluate(()=>window.mpOrbitDebug.getBurns())).toBe(15);
+    expect(await page.evaluate(()=>window.mpOrbitDebug.getBurnAngle())).toBe(0);
     expect(await page.evaluate(()=>window.mpOrbitDebug.getElements().apo)).toBeCloseTo(1,1);
 
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
