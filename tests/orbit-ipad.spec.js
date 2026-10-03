@@ -21,7 +21,7 @@ for(const p of profiles){
     await expect(page.locator('#start-overlay')).toHaveClass(/active/);
     await expect(page.locator('#brandbar img')).toBeVisible();
     await expect(page.locator('#start-overlay .card p')).toContainText('15 коротких импульсов');
-    await expect(page.locator('#start-overlay .card p')).toContainText('угол импульса');
+    await expect(page.locator('#start-overlay .card p')).toContainText('углом импульса');
 
     await page.getByRole('button',{name:'НАЧАТЬ МАНЁВР'}).tap();
     await expect(page.locator('#count-overlay')).toHaveClass(/active/);
