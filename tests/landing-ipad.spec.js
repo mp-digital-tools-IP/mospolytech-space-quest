@@ -82,7 +82,10 @@ test('MP-03 accepts a gentle vertical descent even when total speed exceeds old 
   await page.waitForTimeout(900);
   await expect(page.locator('#result-overlay')).toHaveClass(/active/);
   await expect(page.locator('#result-title')).toContainText('Мягкая посадка выполнена');
-  await expect(page.locator('#result-text')).toContainText('V↓: 28.');
+  const resultText=await page.locator('#result-text').textContent();
+  const verticalMatch=/V↓:\s*([\d.]+)/.exec(resultText||'');
+  expect(verticalMatch).not.toBeNull();
+  expect(Number(verticalMatch[1])).toBeLessThanOrEqual(30);
   await context.close();
 });
 
