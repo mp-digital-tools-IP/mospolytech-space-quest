@@ -146,13 +146,58 @@ h1{margin:8px 0 10px;font-size:46px;line-height:.98;letter-spacing:-.04em;color:
   var html='';
   for(var i=0;i<missions.length;i++){
     var r=results[missions[i][1]]||{};
-    html+='<div class="result"><b>'+esc(missions[i][0])+'</b><span class="ok">Выполнена ✓</span>'+(r.seconds?'<br><span>'+esc(r.seconds)+' сек</span>':'')+'</div>';
+    var p=window.mpScore&&window.mpScore.getLast(missions[i][1]),pts=p?p.points:(r.score||0);
+    html+='<div class="result"><b>'+esc(missions[i][0])+'</b><span class="pts">'+(pts?pts+' / 100':'—')+'</span><span class="ok">'+(pts?'Выполнена ✓':'Нет результата')+'</span>'+(r.seconds?'<br><span>'+esc(r.seconds)+' сек</span>':'')+'</div>';
   }
   document.getElementById('final-results').innerHTML=html;
+  var score=window.mpScore,points=score?score.total(score.current()):0;
+  document.getElementById('final-score').innerHTML=points+' <span>/ 400 игровых очков</span>';
   if(data.startedAt){var sec=Math.max(1,Math.round((Date.now()-data.startedAt)/1000));document.getElementById('final-time').innerHTML='Все четыре миссии пройдены за <b>'+sec+' сек</b>.'}
-  document.getElementById('next-player').onclick=function(){clearCampaign();location.replace('campaign.html?step=0')};
-  document.getElementById('back-home').onclick=function(){clearCampaign()};
+  document.getElementById('next-player').onclick=function(){clearCampaign();if(window.mpScore)window.mpScore.clearPlayer();location.replace('./')};
+  document.getElementById('final-rank-btn').onclick=function(){document.getElementById('ranking').className='active';if(window.mpRefreshRanking)window.mpRefreshRanking()};
   document.getElementById('final').className='active';
+  if(window.mpScore&&window.mpScore.player())document.getElementById('final-name-input').value=window.mpScore.player().name;
+})();
+</script>
+<script>
+(function(){
+'use strict';
+var score=window.mpScore;
+var field=document.getElementById('player-name'),msg=document.getElementById('player-msg');
+if(score&&score.player()){field.value=score.player().name;msg.textContent='Игрок: '+score.player().name}
+function saved(name){
+ var r=score.setName(name);if(!r.ok)return r.message;
+ field.value=r.player.name;msg.textContent='Игрок: '+r.player.name;
+ document.getElementById('final-name-input').value=r.player.name;
+ return 'Результат закреплён за '+r.player.name+(score.apiReady()?'. Отправка в общий рейтинг включена.':'. Сейчас действует локальный рейтинг.');
+}
+document.getElementById('save-player').onclick=function(){msg.textContent=saved(field.value)};
+field.onkeydown=function(e){if(e.key==='Enter')document.getElementById('save-player').click()};
+document.getElementById('final-name-save').onclick=function(){document.getElementById('final-name-msg').textContent=saved(document.getElementById('final-name-input').value)};
+document.getElementById('final-name-input').onkeydown=function(e){if(e.key==='Enter')document.getElementById('final-name-save').click()};
+var ranking=document.getElementById('ranking');
+function esc(s){return String(s===undefined?'':s).replace(/[&<>"']/g,function(x){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]})}
+function refresh(){
+ var list=document.getElementById('rank-rows'),status=document.getElementById('rank-status');
+ list.innerHTML='<div class="rankempty">Загружаем результаты…</div>';
+ score.leaderboard().then(function(data){
+  status.textContent=data.source==='global'?'Общий рейтинг: результаты игроков со всех устройств':data.source==='offline'?'Нет соединения с сервером. Временно показаны результаты этого устройства.':'Локальный рейтинг: результаты только на этом устройстве. Для общего рейтинга требуется подключить сервер.';
+  var current=score.player();
+  if(!data.entries.length){list.innerHTML='<div class="rankempty">Пока нет результатов. Введите имя, пройдите миссию — и появитесь здесь.</div>';return}
+  list.innerHTML=data.entries.map(function(e,i){
+    var pieces=e.scores||{},n=['docking','landing','orbit','debris'].filter(function(id){return Number(pieces[id]&&pieces[id].points)>0}).length;
+    var points=typeof e.total==='number'?e.total:score.total(e.scores);
+    return '<div class="rankrow'+(current&&e.id===current.id?' mine':'')+'"><b>'+(i+1)+'</b><span>'+esc(e.name)+'</span><b>'+Math.round(points)+'/400</b><span>'+n+'/4</span></div>';
+  }).join('');
+ });
+}
+window.mpRefreshRanking=refresh;
+document.getElementById('open-ranking').onclick=function(){ranking.className='active';refresh()};
+document.getElementById('close-ranking').onclick=function(){ranking.className=''};
+ranking.onclick=function(e){if(e.target===ranking)ranking.className=''};
+document.addEventListener('keydown',function(e){if(e.key==='Escape')ranking.className=''});
+var start=document.querySelector('.actions .primary');
+if(start)start.addEventListener('click',function(){try{sessionStorage.removeItem('mp_space_current_scores_v1');sessionStorage.removeItem('mp_space_campaign')}catch(e){}});
 })();
 </script>
 </body>
