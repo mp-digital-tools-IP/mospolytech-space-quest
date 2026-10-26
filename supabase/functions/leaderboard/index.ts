@@ -13,7 +13,7 @@ function limit(n: unknown){return Math.max(0,Math.min(100,Math.round(Number(n)||
 Deno.serve(async(req: Request)=>{
  const origin=req.headers.get('Origin')||'';
  if(origin && !ALLOWED.has(origin)) return json({error:'Origin not allowed'},403,'');
- if(req.method==='OPTIONS') return json({},204,origin);
+ if(req.method==='OPTIONS') return new Response(null,{status:204,headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'GET, POST, OPTIONS','Access-Control-Allow-Headers':'content-type'}});
  const url=new URL(req.url);
  if(!url.pathname.endsWith('/scores'))return json({error:'Not found'},404,origin);
  try{
