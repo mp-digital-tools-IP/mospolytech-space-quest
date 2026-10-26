@@ -105,6 +105,7 @@ function wireScore(m,id){
 }
 function init(){
   var id=detect(),m=meta[id];if(!m)return;
+  document.documentElement.className+=' mp-mission-'+id;
   var inCampaign=false;try{inCampaign=window.self!==window.top}catch(e){inCampaign=true}
   if(inCampaign)document.documentElement.className+=' mp-in-campaign';
   var container=document.getElementById('game-container');insertTop(container,m);decorateStart(m);decorateResults();wireNextGame(m,inCampaign);wireScore(m,id);
