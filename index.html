@@ -92,7 +92,7 @@ h1{margin:8px 0 10px;font-size:46px;line-height:.98;letter-spacing:-.04em;color:
  <input id="player-name" type="text" maxlength="25" placeholder="Имя игрока" aria-label="Имя игрока" autocomplete="off">
  <button id="save-player" type="button">ЗАПИСАТЬ ИМЯ</button>
  <button id="open-ranking" class="rank-btn" type="button">🏆 РЕЙТИНГ</button>
- <span id="player-msg" class="player-msg">Введи имя, чтобы попасть в рейтинг.</span>
+ <span id="player-msg" class="player-msg">Имя для рейтинга видно другим игрокам.</span>
  </section>
   <section class="grid" id="missions" tabindex="-1">
     <a class="card" href="missions/docking/"><img class="cardvisual" src="assets/splash-docking.svg" alt=""><div class="cardinner">
@@ -117,7 +117,7 @@ h1{margin:8px 0 10px;font-size:46px;line-height:.98;letter-spacing:-.04em;color:
     <div class="kicker">Полный маршрут завершён · 4/4</div>
     <h2>Все четыре миссии выполнены</h2>
     <p id="final-time">Инженерный квест Московского Политеха завершён.</p>
-    <div class="stamp"><b>Маршрут выполнен.</b> Покажи этот экран представителю стенда Московского Политеха — он поставит штамп в маршрутный лист.</div>
+    <div class="stamp" id="final-instruction"><b>Маршрут выполнен.</b> Сделай скриншот этого экрана с очками и покажи его представителю Московского Политеха для подтверждения задания.</div>
     <div class="final-score" id="final-score">0 <span>/ 400 игровых очков</span></div><div class="results" id="final-results"></div><div class="final-name"><input id="final-name-input" maxlength="25" placeholder="Имя для рейтинга" aria-label="Имя для рейтинга"><button id="final-name-save" type="button">СОХРАНИТЬ РЕЗУЛЬТАТ</button></div><div class="final-name-msg" id="final-name-msg"></div>
     <div class="final-actions">
       <button class="primary" id="next-player" type="button">СЛЕДУЮЩИЙ УЧАСТНИК</button>
@@ -152,6 +152,8 @@ h1{margin:8px 0 10px;font-size:46px;line-height:.98;letter-spacing:-.04em;color:
   document.getElementById('final-results').innerHTML=html;
   var score=window.mpScore,points=score?score.total(score.current()):0;
   document.getElementById('final-score').innerHTML=points+' <span>/ 400 игровых очков</span>';
+  var completed=0;for(var j=0;j<missions.length;j++){if((score&&score.getLast(missions[j][1]))||(results[missions[j][1]]&&results[missions[j][1]].score))completed++}
+  if(completed<4){document.querySelector('#final .kicker').textContent='Выполнено '+completed+' из 4 миссий';document.querySelector('#final h2').textContent='Твой инженерный результат';document.getElementById('final-instruction').innerHTML='<b>Сохрани свой результат.</b> Сделай скриншот с очками, продолжай другие миссии и повышай место в рейтинге.'}
   if(data.startedAt){var sec=Math.max(1,Math.round((Date.now()-data.startedAt)/1000));document.getElementById('final-time').innerHTML='Все четыре миссии пройдены за <b>'+sec+' сек</b>.'}
   document.getElementById('next-player').onclick=function(){clearCampaign();if(window.mpScore)window.mpScore.clearPlayer();location.replace('./')};
   document.getElementById('final-rank-btn').onclick=function(){document.getElementById('ranking').className='active';if(window.mpRefreshRanking)window.mpRefreshRanking()};
