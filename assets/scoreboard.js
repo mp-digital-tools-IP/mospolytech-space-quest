@@ -16,7 +16,7 @@ function total(scores){return MISSIONS.reduce(function(sum,id){return sum+clamp(
 function entries(list){return list.slice().map(function(e){return {id:e.id,name:e.name,scores:e.scores||{},total:total(e.scores),updated:e.updated||0}}).sort(function(a,b){return b.total-a.total||a.updated-b.updated})}
 function apiUrl(){return (root.MP_LEADERBOARD_API||'').replace(/\/+$/,'')}
 function setName(name){
- name=cleanName(name);if(name.length<2)return {ok:false,message:'Введите имя от 2 до 25 символов.'};
+ name=cleanName(name);if(!/^[a-zа-яё0-9 _.-]{2,25}$/i.test(name))return {ok:false,message:'Имя: 2–25 символов, буквы, цифры, пробел, дефис или точка.'};
  var p=player();if(!p)p={id:uid(),name:name};else p.name=name;
  write(sessionStorage,PLAYER,p);
  var scores=current();if(Object.keys(scores).length){updateLocal(p,scores);postRemote(p)}
