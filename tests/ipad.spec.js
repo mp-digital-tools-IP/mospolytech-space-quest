@@ -131,7 +131,8 @@ test('режим пройти все проводит через 4 миссии,
   await expect(page.locator('#final')).toHaveClass(/active/);
   await expect(page.locator('.result')).toHaveCount(4);
   await expect(page.getByText('Все четыре миссии выполнены')).toBeVisible();
-  await expect(page.locator('.stamp')).toContainText('поставит штамп в маршрутный лист');
+  await expect(page.locator('.stamp')).toContainText('Сделай скриншот');
+   await expect(page.locator('#final-score')).toContainText('/ 400 игровых очков');
   await expect(page.locator('#next-player')).toBeVisible();
 
   const finalDims = await page.evaluate(() => ({
