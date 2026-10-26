@@ -13,13 +13,13 @@ function uid(){return 'p'+Date.now().toString(36)+Math.random().toString(36).sli
 function current(){return read(sessionStorage,CURRENT,{})||{}}
 function table(){var v=read(localStorage,KEY,[]);return Array.isArray(v)?v:[]}
 function total(scores){return MISSIONS.reduce(function(sum,id){return sum+clamp(scores&&scores[id]&&scores[id].points,0,100)},0)}
-function entries(list){return list.slice().map(function(e){return {id:e.id,name:e.name,scores:e.scores||{},total:total(e.scores),updated:e.updated||0}}).sort(function(a,b){return b.total-a.total||a.updated-b.updated}).slice(0,200)}
+function entries(list){return list.slice().map(function(e){return {id:e.id,name:e.name,scores:e.scores||{},total:total(e.scores),updated:e.updated||0}}).sort(function(a,b){return b.total-a.total||a.updated-b.updated})}
 function apiUrl(){return (root.MP_LEADERBOARD_API||'').replace(/\/+$/,'')}
 function setName(name){
  name=cleanName(name);if(name.length<2)return {ok:false,message:'Введите имя от 2 до 25 символов.'};
  var p=player();if(!p)p={id:uid(),name:name};else p.name=name;
  write(sessionStorage,PLAYER,p);
- var scores=current();if(Object.keys(scores).length)updateLocal(p,scores);
+ var scores=current();if(Object.keys(scores).length){updateLocal(p,scores);postRemote(p)}
  return {ok:true,player:p}
 }
 function clearPlayer(){try{sessionStorage.removeItem(PLAYER);sessionStorage.removeItem(CURRENT)}catch(e){}}
@@ -86,7 +86,7 @@ function getLast(id){return current()[id]||null}
 function leaderboard(){
  var p=player(),arr=entries(table());var url=apiUrl();
  if(!url)return Promise.resolve({source:'local',entries:arr});
- return fetch(url+'/scores?limit=100',{cache:'no-store'}).then(function(r){if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(function(j){
+ return fetch(url+'/scores?limit=1000',{cache:'no-store'}).then(function(r){if(!r.ok)throw Error('HTTP '+r.status);return r.json()}).then(function(j){
   if(!j||!Array.isArray(j.entries))throw Error('Некорректный ответ сервера');
   return {source:'global',entries:j.entries};
  }).catch(function(){return {source:'offline',entries:arr}});
