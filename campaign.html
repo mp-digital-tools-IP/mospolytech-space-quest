@@ -44,6 +44,7 @@ iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#070
     </div>
   </div>
 </div>
+<script src="assets/leaderboard-config.js"></script><script src="assets/scoreboard.js"></script>
 <script>
 (function(){
 'use strict';
@@ -60,7 +61,7 @@ function safeWrite(v){try{sessionStorage.setItem('mp_space_campaign',JSON.string
 function safeClear(){try{sessionStorage.removeItem('mp_space_campaign')}catch(e){}}
 var step=clamp(parseInt(param('step')||'0',10)||0,0,3);
 var game=document.getElementById('game'),transition=document.getElementById('transition');
-var current=MISSIONS[step],completeHandled=false,autoTimer=null,countTimer=null,pollTimer=null,missionStarted=Date.now(),lastSeconds=0;
+var current=MISSIONS[step],completeHandled=false,autoTimer=null,countTimer=null,pollTimer=null,missionStarted=Date.now(),lastSeconds=0,lastScore=0;
 var state=safeRead();
 if(!state||step===0){state={startedAt:Date.now(),results:{}};safeWrite(state)}
 function updateTop(){document.getElementById('mission-label').innerHTML='МИССИЯ '+(step+1)+' ИЗ 4';document.getElementById('mission-name').innerHTML=current.name;document.getElementById('fill').style.width=((step+1)*25)+'%'}
@@ -78,7 +79,11 @@ function checkSuccess(){
  var detail=doc.getElementById(current.detail),detailText=detail?(detail.textContent||detail.innerText||''):'';
  lastSeconds=Math.max(1,Math.round((Date.now()-missionStarted)/1000));
  state=safeRead()||{startedAt:Date.now(),results:{}};if(!state.results)state.results={};
- state.results[current.id]={seconds:lastSeconds,detail:detailText};safeWrite(state);
+ var scores=null;
+ try{scores=game.contentWindow.mpScore||null}catch(e){}
+ var earned=scores?(scores.getLast(current.id)||scores.recordMission(current.id,scores.calculate(current.id))):null;
+ lastScore=earned?earned.points:60;
+ state.results[current.id]={seconds:lastSeconds,detail:detailText,score:lastScore};safeWrite(state);
  showTransition();
 }
 function setCountdown(n,last){document.getElementById('auto-note').innerHTML=(last?'Финальный экран':'Следующая миссия')+' через <span class="count">'+n+'</span> сек'}
@@ -86,7 +91,7 @@ function showTransition(){
  var last=step===3;
  document.getElementById('done-kicker').innerHTML='МИССИЯ '+(step+1)+' ИЗ 4 ВЫПОЛНЕНА';
  document.getElementById('done-title').innerHTML=current.name;
- document.getElementById('done-detail').innerHTML='Результат зафиксирован · <b>'+lastSeconds+' сек</b>. '+(last?'Маршрут 4/4 завершён.':'Готовим следующую инженерную задачу.');
+ document.getElementById('done-detail').innerHTML='Заработано <b>'+lastScore+' / 100 очков</b> · '+lastSeconds+' сек. '+(last?'Маршрут 4/4 завершён.':'Готовим следующую инженерную задачу.');
  document.getElementById('next-btn').innerHTML=last?'ПОКАЗАТЬ ИТОГ':'ПЕРЕЙТИ СЕЙЧАС';
  transition.className='transition active';
  var remain=4;setCountdown(remain,last);

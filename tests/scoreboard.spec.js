@@ -1,0 +1,62 @@
+const {test,expect}=require('@playwright/test');
+
+test('Home provides four illustrated mission cards, name entry and an honest local ranking on iPhone',async({browser})=>{
+ const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+ const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e)));
+ await page.goto('/');
+ await expect(page.locator('.cardvisual')).toHaveCount(4);
+ for(const src of await page.locator('.cardvisual').evaluateAll(nodes=>nodes.map(i=>({loaded:i.complete&&i.naturalWidth>0,src:i.getAttribute('src')})))){
+  expect(src.loaded,src.src).toBe(true);
+ }
+ await page.locator('#player-name').fill('Инженер 01');
+ await page.locator('#save-player').click();
+ expect(await page.evaluate(()=>window.mpScore.player().name)).toBe('Инженер 01');
+ await page.locator('#open-ranking').click();
+ await expect(page.locator('#ranking')).toHaveClass(/active/);
+ await expect(page.locator('#rank-status')).toContainText('Локальный рейтинг');
+ await page.locator('#close-ranking').click();
+ const size=await page.evaluate(()=>({w:document.documentElement.scrollWidth-window.innerWidth,h:document.documentElement.scrollHeight-window.innerHeight}));
+ expect(size.w).toBeLessThanOrEqual(1);expect(size.h).toBeLessThanOrEqual(1);
+ expect(errors).toEqual([]);await ctx.close();
+});
+
+test('Mission awards 60–100 points and keeps best personal score in ranking across page loads',async({browser})=>{
+ const ctx=await browser.newContext({viewport:{width:1024,height:768},isMobile:true,hasTouch:true});
+ const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e)));
+ await page.goto('/');
+ await page.locator('#player-name').fill('Марина');
+ await page.locator('#save-player').click();
+ await page.goto('/missions/landing/');
+ await page.getByRole('button',{name:'НАЧАТЬ ПОСАДКУ'}).tap();
+ await page.waitForTimeout(2850);
+ await page.evaluate(()=>window.mpLandingDebug.forceSuccess());
+ await expect(page.locator('.mp-earned-score')).toBeVisible({timeout:5000});
+ const points=await page.evaluate(()=>window.mpScore.getLast('landing').points);
+ expect(points).toBeGreaterThanOrEqual(60);expect(points).toBeLessThanOrEqual(100);
+ await page.goto('/');
+ await page.locator('#open-ranking').click();
+ await expect(page.locator('.rankrow')).toHaveCount(1);
+ await expect(page.locator('.rankrow')).toContainText('Марина');
+ await expect(page.locator('.rankrow')).toContainText(points+'/400');
+ await expect(page.locator('.rankrow')).toContainText('1/4');
+ await page.reload();
+ await page.locator('#open-ranking').click();
+ await expect(page.locator('.rankrow')).toHaveCount(1);
+ expect(errors).toEqual([]);await ctx.close();
+});
+
+test('New participant never inherits the previous participant score',async({browser})=>{
+ const ctx=await browser.newContext({viewport:{width:1024,height:768}});
+ const page=await ctx.newPage();await page.goto('/');
+ await page.evaluate(()=>{
+  mpScore.setName('Первый');mpScore.recordMission('landing',{points:91,base:60,bonus:31});
+  mpScore.clearPlayer();mpScore.setName('Второй');mpScore.recordMission('orbit',{points:77,base:60,bonus:17});
+ });
+ await page.locator('#open-ranking').click();
+ await expect(page.locator('.rankrow')).toHaveCount(2);
+ await expect(page.locator('.rankrow').first()).toContainText('Первый');
+ await expect(page.locator('.rankrow').first()).toContainText('91/400');
+ await expect(page.locator('.rankrow').nth(1)).toContainText('Второй');
+ await expect(page.locator('.rankrow').nth(1)).toContainText('77/400');
+ await ctx.close();
+});

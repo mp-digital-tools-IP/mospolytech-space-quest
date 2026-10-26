@@ -80,11 +80,35 @@ function wireNextGame(m,inCampaign){
   refresh();
   window.setInterval(refresh,220);
 }
+function wireScore(m,id){
+  var overlay=document.getElementById('message-overlay')||document.getElementById('result-overlay');
+  if(!overlay)return;
+  var title=overlay.querySelector('h1');
+  if(!title)return;
+  var done=false;
+  function check(){
+    if(done||!visible(overlay))return;
+    var t=(title.textContent||title.innerText||'').toLowerCase();
+    if(t.indexOf(m.success.toLowerCase())===-1)return;
+    var scores=window.mpScore;if(!scores)return;
+    var calc=scores.calculate(id),saved=scores.recordMission(id,calc);
+    if(!saved)return;
+    done=true;
+    var box=document.createElement('div');
+    box.className='mp-earned-score';
+    box.style.cssText='margin:6px auto 10px;max-width:420px;padding:9px 13px;background:#131a27;border:1px solid #6b303b;border-radius:11px;color:white;text-align:center;font:700 12px Arial,sans-serif;';
+    box.innerHTML='<span style="color:#aeb8c8">ОЧКИ ЗА МИССИЮ</span> &nbsp; <strong style="font-size:24px;color:#fff">'+saved.points+'</strong><span style="color:#aeb8c8"> / 100</span><div style="font-size:10px;color:#bfc6d0;margin-top:4px">Выполнение 60 · За качество +'+saved.bonus+'</div>';
+    title.parentNode.insertBefore(box,title.nextSibling);
+    try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'mp-score',mission:id,points:saved.points},location.origin)}catch(e){}
+  }
+  check();window.setInterval(check,210);
+}
 function init(){
   var id=detect(),m=meta[id];if(!m)return;
+  document.documentElement.className+=' mp-mission-'+id;
   var inCampaign=false;try{inCampaign=window.self!==window.top}catch(e){inCampaign=true}
   if(inCampaign)document.documentElement.className+=' mp-in-campaign';
-  var container=document.getElementById('game-container');insertTop(container,m);decorateStart(m);decorateResults();wireNextGame(m,inCampaign);
+  var container=document.getElementById('game-container');insertTop(container,m);decorateStart(m);decorateResults();wireNextGame(m,inCampaign);wireScore(m,id);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

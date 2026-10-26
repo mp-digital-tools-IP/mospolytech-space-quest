@@ -29,3 +29,9 @@
 #tutorial-overlay p{font-size:14px!important;line-height:1.35!important;margin:7px auto!important}
 #tutorial-overlay .action{min-height:50px!important;margin-top:6px!important}
 @media(max-width:600px){.mp-series-badge{left:10px;top:9px;min-height:30px;padding:0 9px;font-size:9px}.mp-series-line{left:10px;top:42px;width:54px}.mp-home{left:10px;top:49px;min-height:30px;font-size:9px;padding:0 9px}}
+
+/* Mission briefing splash art: overlays remain the same size and do not introduce scroll. */
+.mp-mission-docking #campaign-start-overlay{background-image:linear-gradient(90deg,rgba(7,9,17,.90),rgba(7,9,17,.91)),url("splash-docking.svg")!important;background-size:cover!important;background-position:center!important}
+.mp-mission-landing #start-overlay .card{background-image:linear-gradient(180deg,rgba(9,12,23,.87),rgba(9,12,23,.91)),url("splash-landing.svg")!important;background-size:cover!important;background-position:center!important}
+.mp-mission-orbit #start-overlay .card{background-image:linear-gradient(180deg,rgba(9,12,23,.87),rgba(9,12,23,.91)),url("splash-orbit.svg")!important;background-size:cover!important;background-position:center!important}
+.mp-mission-debris #start-overlay .card{background-image:linear-gradient(180deg,rgba(9,12,23,.87),rgba(9,12,23,.91)),url("splash-debris.svg")!important;background-size:cover!important;background-position:center!important}
