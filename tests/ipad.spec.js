@@ -147,10 +147,11 @@ test('режим пройти все проводит через 4 миссии,
   const storedBeforeReset = await page.evaluate(() => JSON.parse(sessionStorage.getItem('mp_space_campaign')));
   expect(Object.keys(storedBeforeReset.results)).toHaveLength(4);
   await page.locator('#next-player').tap();
-  await expect(page).toHaveURL(/campaign\.html\?step=0$/);
-  await expect(page.locator('#mission-label')).toHaveText('МИССИЯ 1 ИЗ 4');
-  const storedAfterReset = await page.evaluate(() => JSON.parse(sessionStorage.getItem('mp_space_campaign')));
-  expect(Object.keys(storedAfterReset.results)).toHaveLength(0);
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('#player-name')).toBeVisible();
+  const storedAfterReset = await page.evaluate(() => sessionStorage.getItem('mp_space_campaign'));
+  expect(storedAfterReset).toBeNull();
+  expect(await page.evaluate(() => mpScore.player())).toBeNull();
 
   await context.close();
 });
