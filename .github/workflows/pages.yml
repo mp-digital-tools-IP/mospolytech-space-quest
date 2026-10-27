@@ -19,6 +19,8 @@ concurrency:
 jobs:
   ipad-test:
     runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -28,8 +30,7 @@ jobs:
           node-version: 22
       - name: Install test dependencies
         run: npm install
-      - name: Install WebKit
-        run: npx playwright install --with-deps webkit
+      # Browsers and OS packages ship with the version-pinned Playwright container.
       - name: Run iPad WebKit tests
         run: npm run test:ipad
       - name: Upload failure artifacts
