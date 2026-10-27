@@ -104,3 +104,25 @@ test('MP-04 iPhone portrait fills viewport without scroll or double shrink',asyn
   await expect(page.locator('#rotate-note')).toBeVisible();
   await context.close();
 });
+
+test('desktop keyboard arrow keys change the orbital burn vector and expend impulses',async({browser})=>{
+  const context=await browser.newContext({viewport:{width:1440,height:900},hasTouch:false,isMobile:false});
+  const page=await context.newPage();
+  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+  await page.goto('/missions/orbit/');
+  await page.getByRole('button',{name:'НАЧАТЬ МАНЁВР'}).click();
+  await page.waitForTimeout(2850);
+  expect(await page.evaluate(()=>mpOrbitDebug.getBurns())).toBe(15);
+  await page.keyboard.press('ArrowRight');
+  expect(await page.evaluate(()=>mpOrbitDebug.getBurnAngle())).toBe(5);
+  await page.keyboard.press('ArrowLeft');
+  expect(await page.evaluate(()=>mpOrbitDebug.getBurnAngle())).toBe(0);
+  await page.keyboard.press('ArrowUp');
+  expect(await page.evaluate(()=>mpOrbitDebug.getBurns())).toBe(14);
+  await page.keyboard.press('ArrowDown');
+  expect(await page.evaluate(()=>mpOrbitDebug.getBurns())).toBe(13);
+  await page.keyboard.press('r');
+  expect(await page.evaluate(()=>mpOrbitDebug.getBurns())).toBe(15);
+  expect(errors).toEqual([]);
+  await context.close();
+});
