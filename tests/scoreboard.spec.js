@@ -3,6 +3,7 @@ const {test,expect}=require('@playwright/test');
 test('Home provides four illustrated mission cards, name entry and an honest local ranking on iPhone',async({browser})=>{
  const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
  const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e)));
+ await page.route('**/assets/leaderboard-config.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:"window.MP_LEADERBOARD_API='';"}));
  await page.goto('/');
  await expect(page.locator('.cardvisual')).toHaveCount(4);
  for(const src of await page.locator('.cardvisual').evaluateAll(nodes=>nodes.map(i=>({loaded:i.complete&&i.naturalWidth>0,src:i.getAttribute('src')})))){
@@ -23,6 +24,7 @@ test('Home provides four illustrated mission cards, name entry and an honest loc
 test('Mission awards 60–100 points and keeps best personal score in ranking across page loads',async({browser})=>{
  const ctx=await browser.newContext({viewport:{width:1024,height:768},isMobile:true,hasTouch:true});
  const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e)));
+ await page.route('**/assets/leaderboard-config.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:"window.MP_LEADERBOARD_API='';"}));
  await page.goto('/');
  await page.locator('#player-name').fill('Марина');
  await page.locator('#save-player').click();
@@ -47,7 +49,7 @@ test('Mission awards 60–100 points and keeps best personal score in ranking ac
 
 test('New participant never inherits the previous participant score',async({browser})=>{
  const ctx=await browser.newContext({viewport:{width:1024,height:768}});
- const page=await ctx.newPage();await page.goto('/');
+ const page=await ctx.newPage();await page.route('**/assets/leaderboard-config.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:"window.MP_LEADERBOARD_API='';"}));await page.goto('/');
  await page.evaluate(()=>{
   mpScore.setName('Первый');mpScore.recordMission('landing',{points:91,base:60,bonus:31});
   mpScore.clearPlayer();mpScore.setName('Второй');mpScore.recordMission('orbit',{points:77,base:60,bonus:17});
@@ -59,4 +61,20 @@ test('New participant never inherits the previous participant score',async({brow
  await expect(page.locator('.rankrow').nth(1)).toContainText('Второй');
  await expect(page.locator('.rankrow').nth(1)).toContainText('77/400');
  await ctx.close();
+});
+
+
+test('Global leaderboard displays remote players and correct cross-device scores',async({browser})=>{
+ const ctx=await browser.newContext({viewport:{width:1024,height:768}});
+ const page=await ctx.newPage(),errors=[];
+ page.on('pageerror',e=>errors.push(String(e)));
+ await page.route('**/functions/v1/leaderboard/scores?*',route=>route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({entries:[{id:'remotePlayer',name:'Участник из другого города',total:267,scores:{docking:{points:88},landing:{points:92},orbit:{points:87},debris:{points:0}}}]})}));
+ await page.goto('/');
+ await page.locator('#open-ranking').click();
+ await expect(page.locator('#rank-status')).toContainText('Общий рейтинг');
+ await expect(page.locator('.rankrow')).toHaveCount(1);
+ await expect(page.locator('.rankrow')).toContainText('267/400');
+ await expect(page.locator('.rankrow')).toContainText('Участник из другого города');
+ await expect(page.locator('.rankrow')).toContainText('3/4');
+ expect(errors).toEqual([]);await ctx.close();
 });
