@@ -15,7 +15,7 @@ alter table public.space_quest_scores enable row level security;
 
 create or replace function public.space_quest_upsert_best(
   p_id text, p_name text, p_docking integer, p_landing integer, p_orbit integer, p_debris integer
-) returns void language sql security definer set search_path = public as $$
+) returns void language sql security invoker set search_path = public as $$
  insert into public.space_quest_scores (id, name, docking, landing, orbit, debris)
  values (p_id, p_name, p_docking, p_landing, p_orbit, p_debris)
  on conflict (id) do update set
