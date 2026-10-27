@@ -4,11 +4,11 @@ GitHub Pages сам по себе — статический хостинг: о�
 
 ## Подключение
 
-1. Создайте проект Supabase (можно через подключённое приложение Supabase).
-2. Выполните SQL из `supabase/migrations/20261026_space_quest_scores.sql` в SQL editor.
-3. Разверните `supabase/functions/leaderboard/index.ts` как Edge Function `leaderboard`. Функция должна быть публичной (CLI: `supabase functions deploy leaderboard --no-verify-jwt`).
-4. В `assets/leaderboard-config.js` укажите `window.MP_LEADERBOARD_API='https://PROJECT.supabase.co/functions/v1/leaderboard'` и опубликуйте сайт.
-5. Протестируйте GET `/scores` и POST `/scores` в браузере: после прохождения миссии результат игрока появляется на другом устройстве.
+1. Создан проект Supabase **Mospolytech Space Quest** (регион eu-central-1), ID `fprjxxgksxjrrdymbhhw`.
+2. Миграция `space_quest_global_leaderboard` уже применена; SQL хранится в `supabase/migrations/20261026_space_quest_scores.sql`.
+3. Функция `leaderboard` развёрнута публично (`verify_jwt=false`) на Supabase; файлы исходника сохранены в репозитории.
+4. В `assets/leaderboard-config.js` указан действительный URL: `https://fprjxxgksxjrrdymbhhw.supabase.co/functions/v1/leaderboard`.
+5. После публикации проверяйте GET `/scores` и POST `/scores` в браузере: после прохождения миссии результат игрока должен появиться на другом устройстве.
 
 Имя/псевдоним вводится добровольно, **не запрашивайте ФИО и контакты**. На общем экране отображается до 1000 записей. Текущие игровые очки формируются на клиенте: технически подготовленный пользователь может отправить завышенный счёт. Поэтому это развлекательный рейтинг, а не защищённая конкурсная система для официального присуждения призов/баллов. Для официального соревнования требуется верификация игровых событий на сервере, защита от накрутки и правила обработки данных.
 
