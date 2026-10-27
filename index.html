@@ -67,6 +67,71 @@ h1{margin:8px 0 10px;font-size:46px;line-height:.98;letter-spacing:-.04em;color:
 @media(max-width:900px){.cardinner{padding:12px}.player-msg{display:none}.rankhead,.rankrow{grid-template-columns:35px minmax(90px,1fr) 90px 75px}}
 @media(max-width:600px){.playerbar{gap:5px;margin-top:6px;min-height:38px}.playerbar input{width:100%;height:37px;flex:1;font-size:12px;padding:0 8px}.playerbar button{height:37px;font-size:10px;padding:0 9px}.card .cardinner{padding:9px}.card h2{font-size:16px;margin:4px 0}.card p{font-size:10px}.card .num{font-size:10px}.card .meta{font-size:8px}.rankingbox{padding:14px}.ranktop h2{font-size:24px}.rankhead,.rankrow{grid-template-columns:26px minmax(80px,1fr) 78px 54px;gap:3px;padding:9px 6px}.rankrow{font-size:11px}.rankrow b{font-size:13px}.final-score{font-size:27px}.final-name input{width:55%;height:39px}.final-name button{height:39px;font-size:10px}.result .pts{font-size:19px}}
 @media(max-height:700px){.playerbar{margin-top:5px}.card p{display:none}.card .num{font-size:9px}.card h2{font-size:16px}}
+
+/* Responsive desktop / tablets / phones: accessible controls and no clipped text */
+@media(min-width:1200px){
+ .app{padding:clamp(18px,2.5vh,40px) clamp(24px,3vw,72px);max-width:1920px;left:50%;right:auto;width:100%;transform:translateX(-50%)}
+ .hero-copy{max-width:min(48vw,820px)}
+ h1{font-size:clamp(40px,3.4vw,68px)}
+ .grid{gap:clamp(12px,1.3vw,22px)}
+ .cardinner{padding:clamp(14px,1.6vw,28px)}
+ .card h2{font-size:clamp(18px,1.55vw,28px)}
+ .card p{font-size:clamp(11px,1vw,16px)}
+}
+@media(max-width:1050px) and (min-width:601px){
+ .hero{align-items:center}
+ .hero-copy{max-width:58%}
+ .actions{width:39%;max-width:none}
+ .actions .primary,.actions .secondary{width:100%}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+ .app{padding:calc(7px + env(safe-area-inset-top,0px)) 10px calc(8px + env(safe-area-inset-bottom,0px))}
+ .header{min-height:28px}
+ .logo{width:clamp(108px,35vw,150px)}
+ .redline{margin:5px 0}
+ h1{font-size:clamp(20px,5.7vw,29px);line-height:1.05}
+ .kicker{font-size:9px}
+ .hero{display:flex;flex-direction:column;align-items:stretch;gap:6px}
+ .hero-copy{max-width:none}
+ .hero h1{margin:2px 0 3px}
+ .lead{display:none}
+ .actions{display:grid;grid-template-columns:1.1fr .9fr;gap:6px;margin:0}
+ .actions .primary,.actions .secondary{min-height:35px;padding:0 5px;font-size:10px}
+ .playerbar{margin-top:6px;min-height:34px}
+ .playerbar input{height:34px}
+ .playerbar button{height:34px}
+ .playerbar .rank-btn{min-width:84px}
+ .grid{margin-top:8px;gap:7px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));overflow:hidden}
+ .card{min-height:0;border-radius:12px}
+ .cardinner{padding:9px;overflow:hidden}
+ .card h2{font-size:clamp(13px,3.8vw,17px);line-height:1.04}
+ .card p{font-size:clamp(10px,2.8vw,12px);line-height:1.2}
+ .card .meta{font-size:9px}
+ .finalbox{max-height:calc(100dvh - 20px)}
+ .results{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px) and (max-height:680px){
+ .header{min-height:22px}
+ .logo{width:116px}
+ .redline{height:3px;margin:3px 0}
+ .hero h1{font-size:20px}
+ .kicker{font-size:8px}
+ .playerbar{margin-top:3px}
+ .grid{margin-top:5px;gap:5px}
+ .card .meta,.card p{display:none}
+ .card h2{font-size:13px}
+ .cardinner{padding:7px}
+ .actions .primary,.actions .secondary{min-height:32px}
+}
+@media(min-width:601px) and (max-height:650px){
+ .app{padding-top:9px;padding-bottom:9px}
+ .redline{margin:4px 0 5px}
+ .hero h1{font-size:clamp(27px,3vw,40px)}
+ .hero .lead{display:none}
+ .grid{margin-top:7px}
+ .card p{display:none}
+}
 </style>
 </head>
 <body>

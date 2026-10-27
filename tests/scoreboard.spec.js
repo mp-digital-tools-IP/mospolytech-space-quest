@@ -78,3 +78,18 @@ test('Global leaderboard displays remote players and correct cross-device scores
  await expect(page.locator('.rankrow')).toContainText('3/4');
  expect(errors).toEqual([]);await ctx.close();
 });
+
+test('desktop wide and compact mobile home show navigation and mission cards without viewport overflow',async({browser})=>{
+ for(const [width,height] of [[1920,1080],[1366,768],[390,844],[375,667],[320,568]]){
+  const ctx=await browser.newContext({viewport:{width,height},isMobile:width<500,hasTouch:width<500});
+  const page=await ctx.newPage();await page.goto('/');
+  await expect(page.locator('.card')).toHaveCount(4);
+  await expect(page.locator('#open-ranking')).toBeVisible();
+  await expect(page.locator('.actions .primary')).toBeVisible();
+  const dims=await page.evaluate(()=>({x:document.documentElement.scrollWidth-innerWidth,y:document.documentElement.scrollHeight-innerHeight,card:document.querySelector('.card').getBoundingClientRect().height}));
+  expect(dims.x,`width ${width}`).toBeLessThanOrEqual(1);
+  expect(dims.y,`height ${height}`).toBeLessThanOrEqual(1);
+  expect(dims.card).toBeGreaterThan(60);
+  await ctx.close();
+ }
+});

@@ -143,7 +143,21 @@ function bind(){
   }
   var intro=document.querySelector('#start-overlay .card p');
   if(intro)intro.innerHTML='Спутник находится на низкой круговой орбите. У тебя <b>15 коротких импульсов</b>. Управляй величиной ΔV и <b>углом импульса</b>, чтобы перевести аппарат в красный орбитальный коридор и стабилизировать траекторию.';
-  if(('ontouchstart' in window)||(navigator.maxTouchPoints>0))controls.style.display='flex';
+  document.addEventListener('keydown',function(e){
+     var tag=e.target&&e.target.tagName;
+     if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||e.altKey||e.ctrlKey||e.metaKey)return;
+     var k=e.key||'';
+     var handled=k==='ArrowLeft'||k==='ArrowRight'||k==='ArrowUp'||k==='ArrowDown'||k===' '||k==='Spacebar'||k==='r'||k==='R';
+     if(!handled)return;
+     e.preventDefault();
+     if(k==='r'||k==='R'){resetManeuver();return}
+     if(!running||ended||e.repeat)return;
+     if(k==='ArrowLeft')changeBurnAngle(-ANGLE_STEP);
+     else if(k==='ArrowRight')changeBurnAngle(ANGLE_STEP);
+     else if(k==='ArrowUp'||k===' '||k==='Spacebar')burn(1);
+     else if(k==='ArrowDown')burn(-1);
+   },false);
+   if(('ontouchstart' in window)||(navigator.maxTouchPoints>0))controls.style.display='flex';
 }
 function finish(success,reason){
   if(ended)return;
