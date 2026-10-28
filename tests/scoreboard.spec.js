@@ -93,3 +93,15 @@ test('desktop wide and compact mobile home show navigation and mission cards wit
   await ctx.close();
  }
 });
+
+test('mission cover images display crisp vector fallbacks if HD files are absent',async({browser})=>{
+ const ctx=await browser.newContext({viewport:{width:1440,height:900}});
+ const page=await ctx.newPage();
+ await page.route('**/assets/covers/*.webp',r=>r.fulfill({status:404,body:'',contentType:'text/plain'}));
+ await page.goto('/');
+ await expect(page.locator('.cardvisual')).toHaveCount(4);
+ await page.waitForFunction(()=>Array.from(document.querySelectorAll('.cardvisual')).every(img=>img.complete&&img.naturalWidth>0));
+ const imgs=await page.locator('.cardvisual').evaluateAll(nodes=>nodes.map(n=>({src:n.getAttribute('src'),width:n.naturalWidth})));
+ for(const img of imgs){expect(img.src).toMatch(/assets\/splash-.*\.svg$/);expect(img.width).toBeGreaterThan(400);}
+ await ctx.close();
+});
